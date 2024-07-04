@@ -1,0 +1,36 @@
+{
+  "name": "lms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier \"{apps,libs}/**/*.{ts,tsx,js,json}\" --ignore-path .prettierignore",
+    "format:check": "pnpm format --check",
+    "format:write": "pnpm format --write",
+    "tsc": "nx run-many -t tsc",
+    "lint": "nx run-many -t lint",
+    "build": "nx run-many -t build",
+    "dev": "nx run-many -t dev",
+    "dev:api": "nx run @autospace/api:dev",
+    "dev:client": "nx run @autospace/client:dev",
+    "validate": "pnpm format:write && pnpm tsc && pnpm lint && pnpm build",
+    "prepare": "husky",
+    "cm": "cz",
+    "cm:offline": "git add . && cz",
+    "cm:all": "git add . && cz && git push"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "commitizen": "^4.3.0",
+    "eslint": "^9.6.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7",
+    "nx": "19.3.1",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
+  }
+}

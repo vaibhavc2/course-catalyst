@@ -1,0 +1,40 @@
+# Dependency directories
+node_modules
+
+# Nx cache directory
+nx/cache
+
+# Build outputs
+dist
+out
+.next
+build
+
+# Coverage directory
+coverage
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE specific files
+.idea
+.vscode
+
+# OS files
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Generated files
+*.generated.ts
+*.generated.js
