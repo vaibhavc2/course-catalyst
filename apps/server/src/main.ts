@@ -2,13 +2,14 @@ import { App } from './app';
 import { logger } from './common/winston.logger';
 import { envConfig } from './config/env.config';
 import { ct } from './constants';
+import { gracefulShutdown } from './functions/graceful-shutdown';
 
 const { PORT, NODE_ENV, isDev } = envConfig;
 
 function bootstrap() {
   const app = new App().init();
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     logger.info(`=> Express Server started successfully in ${NODE_ENV} mode.`);
 
     if (isDev) {
@@ -18,5 +19,12 @@ function bootstrap() {
       );
     }
   });
+
+  // Graceful shutdown in case of SIGINT (Ctrl+C) or SIGTERM (Docker)
+  process.on(
+    'SIGINT',
+    gracefulShutdown.bind(null, server, isDev ? 1000 : 5000),
+  );
+  process.on('SIGTERM', gracefulShutdown.bind(null, server));
 }
 bootstrap();

@@ -27,9 +27,9 @@ module.exports = {
     'scripts/',
     'test/',
     'tmp/',
+    'temp/',
     'tools/',
     'webpack/',
-    'prisma/',
   ],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',

@@ -37,14 +37,12 @@ export class ErrorMiddleware {
     if (error instanceof ApiError) {
       if (isDev) {
         logger.error(
-          `Error occurred on the route: ${req.path}.` +
-            ct.chalk.error(`\nError: ${error.message}\n`),
+          `Error occurred on the route: ${req.path}\nError: ` +
+            ct.chalk.error(`${error.message}\n`),
         );
       }
     } else {
-      logger.error(
-        `Error occurred on the route: ${req.path}.\n Error: ${error}\n`,
-      );
+      logger.error(`Error occurred on the route: ${req.path}\n${error}\n`);
     }
 
     next(error);
