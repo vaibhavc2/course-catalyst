@@ -10,6 +10,7 @@ const config = {
   COOKIE_EXPIRES_IN: env.get('COOKIE_EXPIRES_IN').default(1).asIntPositive(), // 1 day by default
   CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:3001').asString(),
   APP_VERSION: env.get('APP_VERSION').default('1.0.0').asString(),
+  REDIS_URL: env.get('REDIS_URL').default('redis://localhost:6379').asString(),
 };
 
 const extraConfig = {

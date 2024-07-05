@@ -1,30 +1,77 @@
 import { logger } from '@/common/winston.logger';
 import { envConfig } from '@/config/env.config';
 import { ct } from '@/constants';
-import { ApiError } from '@/utils/api-error.util';
+import { StatusCode } from '@/types/enums';
+import { isApiError } from '@/utils/api-error.util';
 import { NextFunction, Request, Response } from 'express';
 
 const { isDev } = envConfig;
 
+interface UnknownError extends Error {
+  name: string;
+  message: string;
+  statusCode: number;
+  stack?: string;
+  code?: number;
+}
+
 export class ErrorMiddleware {
   constructor() {}
 
+  private sendErrorResponse(
+    statusCode: number,
+    message: string,
+    res: Response,
+  ) {
+    return res.status(statusCode).json({
+      status: statusCode,
+      success: false,
+      message,
+    });
+  }
+
   public handler = (
-    error: unknown,
+    error: UnknownError,
     req: Request,
     res: Response,
     next: NextFunction,
   ) => {
-    if (error instanceof ApiError) {
-      return res.status(error.statusCode).json({
-        status: error.statusCode,
-        message: error.message,
-      });
+    if (isApiError(error)) {
+      return this.sendErrorResponse(error.statusCode, error.message, res);
+    }
+    // else if (
+    //   error instanceof Error &&
+    //   error.name === 'MongoError' &&
+    //   error.code === 11000
+    // ) {
+    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Duplicate key error!', res);
+    // } else if (error instanceof Error && error.name === 'ValidationError') {
+    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, error.message, res);
+    // } else if (error instanceof Error && error.name === 'CastError') {
+    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Invalid ID!', res);
+    // } else if (error instanceof Error && error.name === 'SyntaxError') {
+    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Invalid JSON!', res);
+    // }
+    else if (error instanceof Error && error.name === 'JsonWebTokenError') {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        'Invalid token!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'TokenExpiredError') {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        'Token expired!',
+        res,
+      );
+    } else if (error instanceof Error) {
+      return this.sendErrorResponse(StatusCode.BAD_REQUEST, error.message, res);
     } else {
-      return res.status(500).json({
-        status: 500,
-        message: 'Something went wrong!',
-      });
+      return this.sendErrorResponse(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Something went wrong!',
+        res,
+      );
     }
   };
 
@@ -34,7 +81,7 @@ export class ErrorMiddleware {
     res: Response,
     next: NextFunction,
   ) => {
-    if (error instanceof ApiError) {
+    if (isApiError(error)) {
       if (isDev) {
         logger.error(
           `Error occurred on the route: ${req.path}\nError: ` +
@@ -51,10 +98,11 @@ export class ErrorMiddleware {
   public routeNotFound = (req: Request, res: Response, next: NextFunction) => {
     if (isDev) logger.error(ct.chalk.error(`Route not found: ${req.path}`));
 
-    return res.status(404).json({
-      status: 404,
-      message: 'Route not found',
-    });
+    return this.sendErrorResponse(
+      StatusCode.NOT_IMPLEMENTED,
+      'Route not found',
+      res,
+    );
   };
 }
 

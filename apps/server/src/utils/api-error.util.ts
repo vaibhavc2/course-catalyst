@@ -1,4 +1,5 @@
 import { envConfig } from '@/config/env.config';
+import { ErrorMessages, StatusCode } from '@/types/enums';
 
 const { isDev } = envConfig;
 
@@ -11,10 +12,10 @@ const { isDev } = envConfig;
  * @param {unknown[]} errors - Array of errors
  * @param {string} stackTrace - Stack trace
  * @returns {void}
- * @example throw new ApiError(404, 'User not found');
+ * @example throw ApiError.notImplemented();
  */
 
-class ApiError extends Error {
+class ApiErrorService extends Error {
   statusCode: number;
   data: null;
   message: string;
@@ -23,9 +24,9 @@ class ApiError extends Error {
 
   constructor(
     statusCode: number,
-    message = 'Something went wrong!',
+    message: string = ErrorMessages.SOMETHING_WENT_WRONG,
     errors?: unknown[] | unknown,
-    stackTrace = '',
+    stackTrace: string = '',
   ) {
     super(message); // calls parent class constructor
 
@@ -43,22 +44,78 @@ class ApiError extends Error {
   }
 }
 
-class RequiredBodyError extends ApiError {
-  constructor(notIncludedFields: string[]) {
-    super(400);
+export class ApiError {
+  static custom(statusCode: number, message: string, errors?: unknown[]) {
+    return new ApiErrorService(statusCode, message, errors);
+  }
 
-    if (isDev)
-      this.message = `Missing fields: ${notIncludedFields.join(
-        ', ',
-      )}. Please fill in all the required fields.`;
-    else this.message = 'Please fill in all the required fields!';
+  static badRequest(message: string, errors?: unknown[]) {
+    return new ApiErrorService(StatusCode.BAD_REQUEST, message, errors);
+  }
+
+  static requiredFields(
+    notIncludedFields: string[],
+    message = ErrorMessages.MISSING_FIELDS,
+    errors?: unknown[],
+  ) {
+    return new ApiErrorService(
+      StatusCode.BAD_REQUEST,
+      isDev
+        ? `Missing fields: ${notIncludedFields.join(
+            ', ',
+          )}. ${message || ErrorMessages.MISSING_FIELDS}`
+        : message || ErrorMessages.MISSING_FIELDS,
+      errors,
+    );
+  }
+
+  static unauthorized(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.UNAUTHORIZED,
+      message || ErrorMessages.UNAUTHORIZED,
+      errors,
+    );
+  }
+
+  static forbidden(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.FORBIDDEN,
+      message || ErrorMessages.FORBIDDEN,
+      errors,
+    );
+  }
+
+  static notFound(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.NOT_FOUND,
+      message || ErrorMessages.NOT_FOUND,
+      errors,
+    );
+  }
+
+  static notImplemented(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.NOT_IMPLEMENTED,
+      message || ErrorMessages.NOT_IMPLEMENTED,
+      errors,
+    );
+  }
+
+  static conflict(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(StatusCode.CONFLICT, message, errors);
+  }
+
+  static internal(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.INTERNAL_SERVER_ERROR,
+      message,
+      errors,
+    );
   }
 }
 
-class UnauthorizedError extends ApiError {
-  constructor() {
-    super(401, 'Unauthorized request!');
-  }
-}
+export interface ApiErrorInterface extends ApiErrorService {}
 
-export { ApiError, RequiredBodyError, UnauthorizedError };
+export function isApiError(error: any): error is ApiErrorInterface {
+  return 'statusCode' in error && 'message' in error;
+}

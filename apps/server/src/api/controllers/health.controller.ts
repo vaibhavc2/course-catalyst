@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 export const healthController = {
   index: asyncRequestHandler(
     async (req: Request, res: Response) => {
-      throw new ApiError(500, 'Not implemented yet!');
+      throw ApiError.notImplemented();
     },
     // new ApiResponse(res).success('Server is up and running!'),
   ),

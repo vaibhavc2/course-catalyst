@@ -3,6 +3,10 @@
 // import { asyncHandler } from '@/utils';
 // import { NextFunction, Request, Response } from 'express';
 
+//? Authentication: It is the process of verifying the identity of a user. It is used to ensure that the user is who they claim to be. It is the mechanism of associating an incoming request with a set of identifying credentials. The credentials are typically provided by the user in the form of a username and password, and the system makes sure that the credentials are valid.
+
+//? Authorization: It is the process of determining whether a user has permission to perform a specific action. It is the process of granting or denying access to a user based on their identity and the resources they are trying to access. It is the mechanism of associating a set of permissions with a user or role.
+
 // export class Authentication {
 //   constructor() {}
 
