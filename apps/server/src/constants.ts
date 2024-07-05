@@ -1,5 +1,5 @@
+import { envConfig } from '@/config/env.config';
 import chalk from 'chalk';
-import { envConfig } from './config/env.config';
 
 const { isDev, HOST, PORT, COOKIE_EXPIRES_IN } = envConfig;
 
@@ -13,6 +13,11 @@ export const ct = {
     highlight: chalk.bold.blue,
   },
   base_url: `${isDev ? 'http' : 'https'}://${HOST}${isDev ? ':' + PORT : ''}`,
+  swaggerOptions: {
+    explorer: true,
+    // validatorUrl: null,
+    // customCss: '.swagger-ui .topbar { display: none }',
+  },
   cookieOptions: {
     auth: {
       maxAge: 1000 * 60 * 60 * 24 * COOKIE_EXPIRES_IN, // 30 days by default

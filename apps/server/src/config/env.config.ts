@@ -9,6 +9,7 @@ const config = {
   NODE_ENV: env.get('NODE_ENV').default('development').asString(),
   COOKIE_EXPIRES_IN: env.get('COOKIE_EXPIRES_IN').default(1).asIntPositive(), // 1 day by default
   CLIENT_URL: env.get('CLIENT_URL').default('http://localhost:3001').asString(),
+  APP_VERSION: env.get('APP_VERSION').default('1.0.0').asString(),
 };
 
 const extraConfig = {

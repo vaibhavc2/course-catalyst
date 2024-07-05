@@ -1,7 +1,7 @@
 import { App } from './app';
+import { logger } from './common/winston.logger';
 import { envConfig } from './config/env.config';
 import { ct } from './constants';
-import { logger } from './utils/logger.util';
 
 const { PORT, NODE_ENV, isDev } = envConfig;
 

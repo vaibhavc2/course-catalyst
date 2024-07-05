@@ -11,13 +11,13 @@
     "lint": "nx run-many -t lint",
     "build": "nx run-many -t build",
     "dev": "nx run-many -t dev",
-    "dev:api": "nx run @autospace/api:dev",
-    "dev:client": "nx run @autospace/client:dev",
     "validate": "pnpm format:write && pnpm tsc && pnpm lint && pnpm build",
     "prepare": "husky",
     "cm": "cz",
     "cm:offline": "git add . && cz",
-    "cm:all": "git add . && cz && git push"
+    "cm:all": "git add . && cz && git push",
+    "dev:client": "nx run @lms/client:dev",
+    "dev:server": "nx run @lms/server:dev"
   },
   "keywords": [],
   "author": "",
