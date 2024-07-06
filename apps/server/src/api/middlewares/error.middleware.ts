@@ -1,8 +1,8 @@
 import { logger } from '@/common/winston.logger';
 import { envConfig } from '@/config/env.config';
-import { ct } from '@/constants';
 import { StatusCode } from '@/types/enums';
 import { isApiError } from '@/utils/api-error.util';
+import chalk from 'chalk';
 import { NextFunction, Request, Response } from 'express';
 
 const { isDev } = envConfig;
@@ -37,7 +37,13 @@ export class ErrorMiddleware {
     next: NextFunction,
   ) => {
     if (isApiError(error)) {
-      return this.sendErrorResponse(error.statusCode, error.message, res);
+      // return this.sendErrorResponse(error.statusCode, error.message, res);
+      const { statusCode, message } = error;
+      return res.status(statusCode).json({
+        status: statusCode,
+        success: false,
+        message,
+      });
     }
     // else if (
     //   error instanceof Error &&
@@ -85,7 +91,7 @@ export class ErrorMiddleware {
       if (isDev) {
         logger.error(
           `Error occurred on the route: ${req.path}\nError: ` +
-            ct.chalk.error(`${error.message}\n`),
+            chalk.red(`${error.message}\n`),
         );
       }
     } else {
@@ -96,7 +102,7 @@ export class ErrorMiddleware {
   };
 
   public routeNotFound = (req: Request, res: Response, next: NextFunction) => {
-    if (isDev) logger.error(ct.chalk.error(`Route not found: ${req.path}`));
+    if (isDev) logger.error(chalk.red(`Route not found: ${req.path}`));
 
     return this.sendErrorResponse(
       StatusCode.NOT_IMPLEMENTED,

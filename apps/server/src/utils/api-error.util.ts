@@ -112,6 +112,14 @@ export class ApiError {
       errors,
     );
   }
+
+  static serviceUnavailable(message?: string, errors?: unknown[]) {
+    return new ApiErrorService(
+      StatusCode.SERVICE_UNAVAILABLE,
+      message || ErrorMessages.SERVICE_UNAVAILABLE,
+      errors,
+    );
+  }
 }
 
 export interface ApiErrorInterface extends ApiErrorService {}

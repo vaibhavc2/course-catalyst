@@ -1,7 +1,7 @@
 import { envConfig } from '@/config/env.config';
-import chalk from 'chalk';
 import { Request, Response } from 'express';
 import { Options } from 'express-rate-limit';
+// import chalk from 'chalk';
 
 const { isDev, HOST, PORT, COOKIE_EXPIRES_IN, CLIENT_URL } = envConfig;
 
@@ -15,16 +15,16 @@ export const ct = {
     credentials: true,
     methods: corsMethods,
   },
-  chalk: {
-    success: chalk.bold.green,
-    error: chalk.bold.red,
-    warning: chalk.bold.yellow,
-    highlight: chalk.bold.blue,
-    blue: chalk.blue,
-    red: chalk.red,
-    green: chalk.green,
-    yellow: chalk.yellow,
-  },
+  // chalk: {
+  //   success: chalk.bold.green,
+  //   error: chalk.bold.red,
+  //   warning: chalk.bold.yellow,
+  //   highlight: chalk.bold.blue,
+  //   blue: chalk.blue,
+  //   red: chalk.red,
+  //   green: chalk.green,
+  //   yellow: chalk.yellow,
+  // },
   base_url: `${isDev ? 'http' : 'https'}://${HOST}${isDev ? ':' + PORT : ''}`,
   rateLimitOptions: {
     windowMs: 1 * 60 * 1000, // 1 minute
@@ -49,6 +49,16 @@ export const ct = {
       secure: true,
       sameSite: 'strict' as boolean | 'strict' | 'lax' | 'none' | undefined,
       // sameSite: 'Strict' as 'Lax' | 'None' | 'Strict',
+    },
+  },
+  checkup: {
+    disk: {
+      warningThreshold: 75, // 75% disk space warning
+      criticalThreshold: 90, // 90% disk space critical
+    },
+    memory: {
+      warningThreshold: 75, // 75% memory warning
+      criticalThreshold: 90, // 90% memory critical
     },
   },
 };

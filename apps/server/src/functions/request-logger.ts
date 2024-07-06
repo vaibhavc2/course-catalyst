@@ -1,8 +1,8 @@
-import { ct } from '@/constants';
+import chalk from 'chalk';
 import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 
-morgan.token('styled-route', (req: Request) => ct.chalk.blue(req.path));
+morgan.token('styled-route', (req: Request) => chalk.blue(req.path));
 
 type Tokens = morgan.TokenIndexer<
   express.Request<any, any, Record<string, any>>,

@@ -11,6 +11,7 @@ export enum StatusCode {
   UNPROCESSABLE_ENTITY = 422,
   INTERNAL_SERVER_ERROR = 500,
   NOT_IMPLEMENTED = 501,
+  SERVICE_UNAVAILABLE = 503,
 }
 
 export enum ErrorMessages {
@@ -27,4 +28,5 @@ export enum ErrorMessages {
   INVALID_ID = 'Invalid ID!',
   INVALID_JSON = 'Invalid JSON!',
   SOMETHING_WENT_WRONG = 'Something went wrong!',
+  SERVICE_UNAVAILABLE = 'Service unavailable!',
 }
