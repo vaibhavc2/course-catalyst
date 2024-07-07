@@ -1,26 +1,105 @@
+import { envConfig } from '@/config/env.config';
 import { getErrorMessage } from '@/utils/error-message.util';
-import { PrismaClient } from '@prisma/client/extension';
+import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
+import chalk from 'chalk';
+import util from 'util';
+import { logger } from './winston.logger';
 
-const prisma = new PrismaClient();
+const { isDev } = envConfig;
 
-// Log when successfully connected
-prisma.$on('connect', () => {
-  console.log('Successfully connected to the database.');
-});
+// Prisma client with custom extensions: middlewares are deprecated
+const prisma = new PrismaClient(
+  // Log all queries, errors, info and warning messages in development
+  isDev
+    ? {
+        log: [
+          {
+            emit: 'stdout',
+            level: 'query',
+          },
+          {
+            emit: 'stdout',
+            level: 'error',
+          },
+          {
+            emit: 'stdout',
+            level: 'info',
+          },
+          {
+            emit: 'stdout',
+            level: 'warn',
+          },
+        ],
+      }
+    : undefined,
+).$extends({
+  query: {
+    user: {
+      // hash the password before saving or updating using argon2
+      async $allOperations({ operation, model, args, query }) {
+        // Skip if the model is not User
+        if (model !== 'User') return query(args);
 
-// Log when an error occurs
-prisma.$on('error', (error: Error) => {
-  console.error('Database error:', error);
-});
+        // Handle different operations that include user data differently
+        if (operation === 'create' && args.data) {
+          // For create operations, args.data exists
+          if (args.data.password) {
+            args.data.password = await argon2.hash(String(args.data.password));
+          }
+        } else if (operation === 'update' && args.data) {
+          // For update operations, args.data exists
+          if (args.data.password) {
+            args.data.password = await argon2.hash(String(args.data.password));
+          }
+        } else if (operation === 'upsert' && args.create && args.update) {
+          // For upsert operations, args.create and args.update exist
+          if (args.create.password) {
+            args.create.password = await argon2.hash(
+              String(args.create.password),
+            );
+          }
+          if (args.update.password) {
+            args.update.password = await argon2.hash(
+              String(args.update.password),
+            );
+          }
+        }
 
-// Middleware for logging errors
-prisma.$use(async (params: any, next: any) => {
-  try {
-    return await next(params);
-  } catch (error) {
-    console.error('Database error:', error);
-    throw getErrorMessage(error); // Re-throw the error for further handling
-  }
+        // Proceed with the query
+        return query(args);
+      },
+    },
+    // logs all queries
+    async $allOperations({ operation, model, args, query }) {
+      try {
+        const start = performance.now();
+        const result = await query(args);
+        const end = performance.now();
+        const time = end - start;
+
+        if (isDev) {
+          // Query ${operation} on model ${model} took ${end - start} ms`);
+          logger.info(
+            chalk.green('=> Query :: ') +
+              chalk.yellow(`${model}.${operation}`) +
+              chalk.green(` took ${time}ms`) +
+              '\n' +
+              util.inspect(
+                { model, operation, args, time },
+                { showHidden: false, depth: null, colors: true },
+              ),
+          );
+        }
+
+        return result;
+      } catch (error) {
+        logger.error('!! Database error: ' + isDev ? chalk.red(error) : error);
+
+        throw new Error(getErrorMessage(error)); // Re-throw the error for further handling
+      }
+    },
+  },
 });
 
 export default prisma;

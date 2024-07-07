@@ -21,24 +21,6 @@
           }
         }
       }
-    },
-    "/health/{text}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "text",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
     }
   }
 }

@@ -1,37 +1,14 @@
-import { checkups } from '@/functions/checkup.functions';
-import { CheckResult } from '@/types/dtos/health.dto';
-import { StatusCode } from '@/types/enums';
+import { StatusCode } from '@/common/error.enums';
 import { ApiError } from '@/utils/api-error.util';
 import { ApiResponse } from '@/utils/api-response.util';
 import { autoWrapAsyncMethods } from '@/utils/async-error-handling.util';
 import { Request, Response } from 'express';
-
-interface results {
-  google?: CheckResult;
-  db?: CheckResult;
-  disk?: CheckResult;
-  memory?: CheckResult;
-}
+import { healthService } from './health.service';
 
 export const healthController = autoWrapAsyncMethods({
   index: async (req: Request, res: Response) => {
-    //? use Promise.all to run all checks concurrently, if needed
-    // const results = await Promise.all([
-    //   checkups.httpCheck('http://google.com'),
-    //   checkups.dbCheck(),
-    //   checkups.diskCheck(),
-    //   checkups.memoryCheck(),
-    // ]);
-
-    const google = await checkups.httpCheck('http://google.com');
-
-    const db = await checkups.dbCheck();
-
-    const disk = await checkups.diskCheck();
-
-    const memory = await checkups.memoryCheck();
-
-    const results: results = {
+    const { google, db, disk, memory } = (await healthService.index()) ?? {};
+    const results = {
       google,
       db,
       disk,

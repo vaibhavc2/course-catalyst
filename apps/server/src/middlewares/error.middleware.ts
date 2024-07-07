@@ -1,6 +1,6 @@
+import { StatusCode } from '@/common/error.enums';
 import { logger } from '@/common/winston.logger';
 import { envConfig } from '@/config/env.config';
-import { StatusCode } from '@/types/enums';
 import { isApiError } from '@/utils/api-error.util';
 import chalk from 'chalk';
 import { NextFunction, Request, Response } from 'express';

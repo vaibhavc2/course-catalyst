@@ -6,12 +6,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger-output.json';
-import { errorMiddleware } from './api/middlewares/error.middleware';
-import { supplyAppVersionHeader } from './api/middlewares/version.middleware';
-import apiV1Router from './api/router/v1';
 import { envConfig } from './config/env.config';
 import { ct } from './constants';
 import { requestLogger } from './functions/request-logger';
+import { errorMiddleware } from './middlewares/error.middleware';
+import { supplyAppVersionHeader } from './middlewares/version.middleware';
+import apiV1Router from './router/v1';
 
 const { isDev } = envConfig;
 

@@ -1,4 +1,4 @@
-import { healthController } from '@/api/controllers/health.controller';
+import { healthController } from '@/api/health/health.controller';
 import express from 'express';
 
 const router = express.Router();

@@ -1,4 +1,4 @@
-import healthRouter from '@/api/router/v1/routes/health.routes';
+import healthRouter from '@/router/v1/routes/health.routes';
 import express from 'express';
 
 // Create a new router instance

@@ -1,5 +1,5 @@
+import { ErrorMessages, StatusCode } from '@/common/error.enums';
 import { envConfig } from '@/config/env.config';
-import { ErrorMessages, StatusCode } from '@/types/enums';
 
 const { isDev } = envConfig;
 
