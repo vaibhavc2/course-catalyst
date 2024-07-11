@@ -9,13 +9,14 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import React from 'react';
 
 interface VerifyEmailProps {
   verificationCode: string | number;
   appName: string;
 }
 
-export default function verifyEmail({
+export default function VerifyEmail({
   verificationCode = '123456',
   appName = 'CourseCatalyst',
 }: VerifyEmailProps) {

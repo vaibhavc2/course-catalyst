@@ -2,7 +2,7 @@ import { logger } from '@/common/winston.logger';
 import { envConfig } from '@/config/env.config';
 import { ct } from '@/constants';
 import { printErrorMessage } from '@/utils/error-message.util';
-import { verifyEmail } from '@lms/transactional';
+import { renderVerifyEmail } from '@lms/transactional';
 import { Resend } from 'resend';
 
 const { RESEND_API_KEY, EMAIL_FROM } = envConfig;
@@ -19,6 +19,7 @@ class EmailService {
     title: string;
     subject: string;
     html: any;
+    // react?: any;
   }) => {
     const { email, title, subject, html } = params;
     try {
@@ -27,6 +28,7 @@ class EmailService {
         to: email,
         subject,
         html,
+        // react: params.react,
       });
 
       if (!response.error)
@@ -47,13 +49,15 @@ class EmailService {
   }) {
     const title = ct.appName;
     const subject = `${title}: Verify your email address`;
-    const html = verifyEmail({ verificationCode, appName: title });
+    const html = renderVerifyEmail(verificationCode, title);
+    // const react = renderVerifyEmail(verificationCode, title);
 
     return this.send({
       email,
       title,
       subject,
       html,
+      // react,
     });
   }
 }

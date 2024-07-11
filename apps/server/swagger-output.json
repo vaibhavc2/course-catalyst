@@ -22,7 +22,7 @@
         }
       }
     },
-    "/user/register": {
+    "/users/register": {
       "post": {
         "description": "",
         "responses": {

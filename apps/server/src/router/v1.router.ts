@@ -1,5 +1,5 @@
 import healthRouter from '@/api/v1/health/health.routes';
-import userRouter from '@/api/v1/user/user.routes';
+import userRouter from '@/api/v1/users/users.routes';
 import express from 'express';
 
 // Create a new router instance
@@ -17,7 +17,7 @@ const apiV1Router = express.Router();
 apiV1Router.use('/health', healthRouter);
 
 // user routes
-apiV1Router.use('/user', userRouter);
+apiV1Router.use('/users', userRouter);
 
 // Export the router
 export default apiV1Router;

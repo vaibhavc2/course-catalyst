@@ -1,6 +1,7 @@
 import { logger } from '@/common/winston.logger';
 import chalk from 'chalk';
 import { NextFunction, Request, Response } from 'express';
+import { getErrorMessage } from './error-message.util';
 
 /**
  * A type definition for an async error handler function that takes a Request and Response
@@ -97,9 +98,10 @@ export function asyncFnWrapper<T extends any[], R>(
     try {
       return await fn(...args);
     } catch (error) {
-      logger.error('!! An error occurred: ' + chalk.red(`${error}`));
+      const errorMessage = getErrorMessage(error);
+      logger.error('!! An error occurred: ' + chalk.red(`${errorMessage}`));
 
-      return undefined;
+      throw new Error(errorMessage);
     }
   };
 }
