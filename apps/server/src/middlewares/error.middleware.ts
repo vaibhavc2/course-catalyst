@@ -1,7 +1,7 @@
 import { StatusCode } from '@/common/error.enums';
 import { logger } from '@/common/winston.logger';
 import { envConfig } from '@/config/env.config';
-import { isApiError } from '@/utils/api-error.util';
+import { ApiError } from '@/utils/api-error.util';
 import chalk from 'chalk';
 import { NextFunction, Request, Response } from 'express';
 
@@ -36,14 +36,9 @@ export class ErrorMiddleware {
     res: Response,
     next: NextFunction,
   ) => {
-    if (isApiError(error)) {
-      // return this.sendErrorResponse(error.statusCode, error.message, res);
+    if (error instanceof ApiError) {
       const { statusCode, message } = error;
-      return res.status(statusCode).json({
-        status: statusCode,
-        success: false,
-        message,
-      });
+      return this.sendErrorResponse(statusCode, message, res);
     }
     // else if (
     //   error instanceof Error &&
@@ -70,12 +65,10 @@ export class ErrorMiddleware {
         'Token expired!',
         res,
       );
-    } else if (error instanceof Error) {
-      return this.sendErrorResponse(StatusCode.BAD_REQUEST, error.message, res);
     } else {
       return this.sendErrorResponse(
-        StatusCode.INTERNAL_SERVER_ERROR,
-        'Something went wrong!',
+        error.code || StatusCode.INTERNAL_SERVER_ERROR,
+        error.message || 'Something went wrong!',
         res,
       );
     }
@@ -87,7 +80,7 @@ export class ErrorMiddleware {
     res: Response,
     next: NextFunction,
   ) => {
-    if (isApiError(error)) {
+    if (error instanceof ApiError) {
       if (isDev) {
         logger.error(
           `Error occurred on the route: ${req.path}\nError: ` +

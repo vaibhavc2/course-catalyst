@@ -21,7 +21,7 @@ export const healthController = autoWrapAsyncMethods({
       !disk?.success &&
       !memory?.success
     ) {
-      throw ApiError.serviceUnavailable(
+      throw new ApiError().serviceUnavailable(
         'All checks failed!! Immediate action required!',
       );
     } else if (

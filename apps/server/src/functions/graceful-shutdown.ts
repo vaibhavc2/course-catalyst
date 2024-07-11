@@ -1,12 +1,9 @@
-import { envConfig } from '@/config/env.config';
 import { IncomingMessage, Server, ServerResponse } from 'http';
-
-const { isDev } = envConfig;
 
 // Graceful shutdown in case of SIGINT (Ctrl+C) or SIGTERM (Docker)
 export const gracefulShutdown = (
   server: Server<typeof IncomingMessage, typeof ServerResponse>,
-  waitTime: number = isDev ? 1000 : 5000, // Default wait time of 5 seconds
+  waitTime: number = 5000, // Default wait time of 5 seconds
 ) => {
   console.debug('\n=> Signal received: closing HTTP server...');
 

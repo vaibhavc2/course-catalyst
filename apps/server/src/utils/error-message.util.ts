@@ -1,3 +1,5 @@
+import { logger } from '@/common/winston.logger';
+
 type ErrorWithMessage = {
   message: string;
 };
@@ -26,4 +28,9 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 
 export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message;
+}
+
+export function printErrorMessage(error: unknown, context = '') {
+  const errorMessage = getErrorMessage(error);
+  logger.error(`Error in ${context}: ${errorMessage}`);
 }

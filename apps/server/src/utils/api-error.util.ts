@@ -1,10 +1,10 @@
-import { ErrorMessages, StatusCode } from '@/common/error.enums';
+import { ErrorMessage, StatusCode } from '@/common/error.enums';
 import { envConfig } from '@/config/env.config';
 
 const { isDev } = envConfig;
 
 /**
- * Custom error class for API errors
+ * Custom error class for API errors.
  * @class ApiError
  * @extends {Error}
  * @param {number} statusCode - HTTP status code
@@ -12,10 +12,10 @@ const { isDev } = envConfig;
  * @param {unknown[]} errors - Array of errors
  * @param {string} stackTrace - Stack trace
  * @returns {void}
- * @example throw ApiError.notImplemented();
+ * @example throw new ApiError().custom(404, 'Resource not found');
+ * @example throw new ApiError().notImplemented();
  */
-
-class ApiErrorService extends Error {
+export class ApiError extends Error {
   statusCode: number;
   data: null;
   message: string;
@@ -23,8 +23,8 @@ class ApiErrorService extends Error {
   errors: unknown[] | unknown | undefined;
 
   constructor(
-    statusCode: number,
-    message: string = ErrorMessages.SOMETHING_WENT_WRONG,
+    statusCode: number = StatusCode.INTERNAL_SERVER_ERROR,
+    message: string = ErrorMessage.SOMETHING_WENT_WRONG,
     errors?: unknown[] | unknown,
     stackTrace: string = '',
   ) {
@@ -42,88 +42,76 @@ class ApiErrorService extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
   }
-}
 
-export class ApiError {
-  static custom(statusCode: number, message: string, errors?: unknown[]) {
-    return new ApiErrorService(statusCode, message, errors);
+  custom(statusCode: number, message: string, errors?: unknown[]) {
+    return new ApiError(statusCode, message, errors);
   }
 
-  static badRequest(message: string, errors?: unknown[]) {
-    return new ApiErrorService(StatusCode.BAD_REQUEST, message, errors);
+  badRequest(message: string, errors?: unknown[]) {
+    return new ApiError(StatusCode.BAD_REQUEST, message, errors);
   }
 
-  static requiredFields(
+  requiredFields(
     notIncludedFields: string[],
-    message = ErrorMessages.MISSING_FIELDS,
+    message = ErrorMessage.MISSING_FIELDS,
     errors?: unknown[],
   ) {
-    return new ApiErrorService(
+    return new ApiError(
       StatusCode.BAD_REQUEST,
       isDev
         ? `Missing fields: ${notIncludedFields.join(
             ', ',
-          )}. ${message || ErrorMessages.MISSING_FIELDS}`
-        : message || ErrorMessages.MISSING_FIELDS,
+          )}. ${message || ErrorMessage.MISSING_FIELDS}`
+        : message || ErrorMessage.MISSING_FIELDS,
       errors,
     );
   }
 
-  static unauthorized(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
+  unauthorized(message?: string, errors?: unknown[]) {
+    return new ApiError(
       StatusCode.UNAUTHORIZED,
-      message || ErrorMessages.UNAUTHORIZED,
+      message || ErrorMessage.UNAUTHORIZED,
       errors,
     );
   }
 
-  static forbidden(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
+  forbidden(message?: string, errors?: unknown[]) {
+    return new ApiError(
       StatusCode.FORBIDDEN,
-      message || ErrorMessages.FORBIDDEN,
+      message || ErrorMessage.FORBIDDEN,
       errors,
     );
   }
 
-  static notFound(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
+  notFound(message?: string, errors?: unknown[]) {
+    return new ApiError(
       StatusCode.NOT_FOUND,
-      message || ErrorMessages.NOT_FOUND,
+      message || ErrorMessage.NOT_FOUND,
       errors,
     );
   }
 
-  static notImplemented(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
+  notImplemented(message?: string, errors?: unknown[]) {
+    return new ApiError(
       StatusCode.NOT_IMPLEMENTED,
-      message || ErrorMessages.NOT_IMPLEMENTED,
+      message || ErrorMessage.NOT_IMPLEMENTED,
       errors,
     );
   }
 
-  static conflict(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(StatusCode.CONFLICT, message, errors);
+  conflict(message?: string, errors?: unknown[]) {
+    return new ApiError(StatusCode.CONFLICT, message, errors);
   }
 
-  static internal(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
-      StatusCode.INTERNAL_SERVER_ERROR,
-      message,
-      errors,
-    );
+  internal(message?: string, errors?: unknown[]) {
+    return new ApiError(StatusCode.INTERNAL_SERVER_ERROR, message, errors);
   }
 
-  static serviceUnavailable(message?: string, errors?: unknown[]) {
-    return new ApiErrorService(
+  serviceUnavailable(message?: string, errors?: unknown[]) {
+    return new ApiError(
       StatusCode.SERVICE_UNAVAILABLE,
-      message || ErrorMessages.SERVICE_UNAVAILABLE,
+      message || ErrorMessage.SERVICE_UNAVAILABLE,
       errors,
     );
   }
-}
-
-export interface ApiErrorInterface extends ApiErrorService {}
-
-export function isApiError(error: any): error is ApiErrorInterface {
-  return 'statusCode' in error && 'message' in error;
 }

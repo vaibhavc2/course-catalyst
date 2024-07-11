@@ -4,7 +4,7 @@ import { envConfig } from './config/env.config';
 import { ct } from './constants';
 import { gracefulShutdown } from './functions/graceful-shutdown';
 
-const { PORT, NODE_ENV, isDev } = envConfig;
+const { PORT, NODE_ENV, isDev, isProd } = envConfig;
 
 function bootstrap() {
   const app = new App().init();
@@ -21,10 +21,9 @@ function bootstrap() {
   });
 
   // Graceful shutdown in case of SIGINT (Ctrl+C) or SIGTERM (Docker)
-  process.on(
-    'SIGINT',
-    gracefulShutdown.bind(null, server, isDev ? 1000 : 5000),
-  );
-  process.on('SIGTERM', gracefulShutdown.bind(null, server));
+  if (isProd) {
+    process.on('SIGINT', gracefulShutdown.bind(null, server));
+    process.on('SIGTERM', gracefulShutdown.bind(null, server));
+  }
 }
 bootstrap();

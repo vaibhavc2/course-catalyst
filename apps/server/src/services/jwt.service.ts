@@ -1,229 +1,138 @@
-// import { envConfig } from '@/config/env.config';
-// import { ApiError } from '@/utils/api-error.util';
-// import jt from 'jsonwebtoken';
+import { envConfig } from '@/config/env.config';
+import { wrapAsyncMethodsOfClass } from '@/utils/async-error-handling.util';
+import { getErrorMessage } from '@/utils/error-message.util';
+import { sign, verify } from 'jsonwebtoken';
 
-// const {
-//   ACCESS_TOKEN_SECRET,
-//   ACCESS_TOKEN_EXPIRY,
-//   REFRESH_TOKEN_SECRET,
-//   REFRESH_TOKEN_EXPIRY,
-//   VERIFICATION_TOKEN_SECRET,
-//   VERIFICATION_TOKEN_EXPIRY,
-//   SECURITY_TOKEN_SECRET,
-//   SECURITY_TOKEN_EXPIRY,
-// } = envConfig;
+const {
+  ACCESS_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_SECRET,
+  REFRESH_TOKEN_EXPIRY,
+  ACTIVATION_TOKEN_SECRET,
+  ACTIVATION_TOKEN_EXPIRY,
+} = envConfig;
 
-// interface Token {
-//   secret: string;
-//   expiresIn: string;
-// }
+interface Token {
+  secret: string;
+  expiresIn: string;
+}
 
-// type UserEmailParams =
-//   | { userId?: number; email?: string }
-//   | { userId: number; email?: never }
-//   | { userId?: never; email: string }
-//   | { userId: number; email: string };
+type VerificationPromise<T> = Promise<T | null>;
 
-// type PhoneEmailParams =
-//   | { email?: string; phone?: string }
-//   | { email: string; phone?: never }
-//   | { email?: never; phone: string }
-//   | { email: string; phone: string };
+class JWTService {
+  private readonly accessToken: Token;
+  private readonly refreshToken: Token;
+  private readonly activationToken: Token;
 
-// type UserPhoneParams =
-//   | { userId?: number; phone?: string }
-//   | { userId: number; phone?: never }
-//   | { userId?: never; phone: string }
-//   | { userId: number; phone: string };
+  constructor() {
+    this.accessToken = {
+      secret: ACCESS_TOKEN_SECRET,
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    };
+    this.refreshToken = {
+      secret: REFRESH_TOKEN_SECRET,
+      expiresIn: REFRESH_TOKEN_EXPIRY,
+    };
+    this.activationToken = {
+      secret: ACTIVATION_TOKEN_SECRET,
+      expiresIn: ACTIVATION_TOKEN_EXPIRY,
+    };
+  }
 
-// type VerificationParams =
-//   | {
-//       userId?: number;
-//       email?: string;
-//       phone?: string;
-//     }
-//   | {
-//       userId: number;
-//       email?: string;
-//       phone?: string;
-//     }
-//   | {
-//       userId: number;
-//       email: string;
-//       phone?: never;
-//     }
-//   | {
-//       userId: number;
-//       email?: never;
-//       phone: string;
-//     }
-//   | {
-//       userId?: never;
-//       email: string;
-//       phone: string;
-//     }
-//   | {
-//       userId?: never;
-//       email: string;
-//       phone?: never;
-//     }
-//   | ({
-//       userId: number;
-//       email: string;
-//       phone: string;
-//     } & PhoneEmailParams &
-//       UserEmailParams &
-//       UserPhoneParams);
+  private generateToken = async (params: {
+    secret: string;
+    expiresIn: string;
+    data: any;
+  }) => {
+    const { secret, expiresIn, data } = params;
+    const token = sign(data, secret, {
+      expiresIn: expiresIn,
+    });
+    return token;
+  };
 
-// class JWTService {
-//   private readonly accessToken: Token;
-//   private readonly refreshToken: Token;
-//   private readonly verificationToken: Token;
-//   private readonly securityToken: Token;
+  private disableToken = async (params: { token: string; secret: string }) => {
+    const { token, secret } = params;
+    return await this.generateToken({
+      secret,
+      expiresIn: '1s',
+      data: { token },
+    });
+  };
 
-//   constructor() {
-//     this.accessToken = {
-//       secret: ACCESS_TOKEN_SECRET,
-//       expiresIn: ACCESS_TOKEN_EXPIRY,
-//     };
-//     this.refreshToken = {
-//       secret: REFRESH_TOKEN_SECRET,
-//       expiresIn: REFRESH_TOKEN_EXPIRY,
-//     };
-//     this.verificationToken = {
-//       secret: VERIFICATION_TOKEN_SECRET,
-//       expiresIn: VERIFICATION_TOKEN_EXPIRY,
-//     };
-//     this.securityToken = {
-//       secret: SECURITY_TOKEN_SECRET,
-//       expiresIn: SECURITY_TOKEN_EXPIRY,
-//     };
-//   }
+  private verifyToken = async (params: { token: string; secret: string }) => {
+    const { token, secret } = params;
+    return new Promise((resolve, reject) =>
+      verify(token, secret, this.errorCallback(resolve, reject)),
+    );
+  };
 
-//   private errorCallback = (err: unknown, payload: any) => {
-//     if (err) {
-//       throw new ApiError(401, 'Invalid Token or Token Expired!');
-//     }
-//     return payload;
-//   };
+  private errorCallback =
+    (resolve: (value: any) => void, reject: (reason?: any) => void) =>
+    (err: unknown, payload: any) => {
+      if (err) {
+        reject(getErrorMessage(err) || 'Invalid Token or Token Expired!');
+      }
+      return resolve(payload);
+    };
 
-//   generateAccessToken = (userId: number) => {
-//     const accessToken = jt.sign(
-//       {
-//         id: userId,
-//       },
-//       this.accessToken.secret,
-//       {
-//         expiresIn: this.accessToken.expiresIn,
-//       },
-//     );
-//     return accessToken;
-//   };
+  generateAccessToken = async (userId: number) => {
+    return await this.generateToken({
+      secret: this.accessToken.secret,
+      expiresIn: this.accessToken.expiresIn,
+      data: { id: userId },
+    });
+  };
 
-//   generateRefreshToken = (
-//     userId: number,
-//     { email, phone }: { email?: string; phone?: string } = {},
-//   ) => {
-//     const refreshToken = jt.sign(
-//       {
-//         id: userId,
-//         email,
-//         phone,
-//       },
-//       this.refreshToken.secret,
-//       {
-//         expiresIn: this.refreshToken.expiresIn,
-//       },
-//     );
-//     return refreshToken;
-//   };
+  generateRefreshToken = async (userId: number) => {
+    return await this.generateToken({
+      secret: this.refreshToken.secret,
+      expiresIn: this.refreshToken.expiresIn,
+      data: { id: userId },
+    });
+  };
 
-//   generateAuthTokens = (userId: number, { email, phone }: PhoneEmailParams) => {
-//     const accessToken = this.generateAccessToken(userId);
-//     const refreshToken = this.generateRefreshToken(userId, { email, phone });
+  generateActivationToken = async ({
+    email,
+    otpCode,
+  }: {
+    email: string;
+    otpCode: string | number;
+  }) => {
+    return await this.generateToken({
+      secret: this.activationToken.secret,
+      expiresIn: this.activationToken.expiresIn,
+      data: { email, otpCode },
+    });
+  };
 
-//     return { accessToken, refreshToken };
-//   };
+  verifyAccessToken = async (token: string) => {
+    return (await this.verifyToken({
+      token,
+      secret: this.accessToken.secret,
+    })) as VerificationPromise<{ id: string }>;
+  };
 
-//   generateVerificationToken = ({
-//     userId,
-//     email,
-//     phone,
-//   }: VerificationParams) => {
-//     const verificationToken = jt.sign(
-//       {
-//         id: userId,
-//         email,
-//         phone,
-//       },
-//       this.verificationToken.secret,
-//       {
-//         expiresIn: this.verificationToken.expiresIn,
-//       },
-//     );
-//     return verificationToken;
-//   };
+  verifyActivationToken = async (token: string) => {
+    return (await this.verifyToken({
+      token,
+      secret: this.activationToken.secret,
+    })) as VerificationPromise<{ email: string }>;
+  };
 
-//   generateSecurityToken = (userId: number) => {
-//     const securityToken = jt.sign(
-//       {
-//         id: userId,
-//       },
-//       this.securityToken.secret,
-//       {
-//         expiresIn: this.securityToken.expiresIn,
-//       },
-//     );
-//     return securityToken;
-//   };
+  verifyRefreshToken = async (token: string) => {
+    return (await this.verifyToken({
+      token,
+      secret: this.refreshToken.secret,
+    })) as VerificationPromise<{ id: string }>;
+  };
 
-//   verifyAccessToken: (token: string) => { id: number } | null = (
-//     token: string,
-//   ) => {
-//     return jt.verify(
-//       token,
-//       this.accessToken.secret,
-//       this.errorCallback,
-//     ) as unknown as { id: number } | null;
-//   };
+  disableAccessToken = async (token: string) => {
+    return await this.disableToken({
+      token,
+      secret: this.accessToken.secret,
+    });
+  };
+}
 
-//   verifyRefreshToken: (token: string) => { id: number; email: string } | null =
-//     (token: string) => {
-//       return jt.verify(
-//         token,
-//         this.refreshToken.secret,
-//         this.errorCallback,
-//       ) as unknown as { id: number; email: string } | null;
-//     };
-
-//   verifyVerificationToken = (token: string) => {
-//     return jt.verify(
-//       token,
-//       this.verificationToken.secret,
-//       this.errorCallback,
-//     ) as unknown as { id?: number; email?: string; phone?: string } | null;
-//   };
-
-//   verifySecurityToken: (token: string) => { id: number } | null = (
-//     token: string,
-//   ) => {
-//     return jt.verify(
-//       token,
-//       this.securityToken.secret,
-//       this.errorCallback,
-//     ) as unknown as {
-//       id: number;
-//     } | null;
-//   };
-
-//   disableToken = (token: string) => {
-//     return jt.verify(token, this.accessToken.secret, (err, payload) => {
-//       if (err) {
-//         throw new ApiError(401, 'Invalid Token or Token Expired!');
-//       }
-//       return payload;
-//     });
-//   };
-// }
-
-// export const jwt = new JWTService();
+export const jwt = wrapAsyncMethodsOfClass(new JWTService());

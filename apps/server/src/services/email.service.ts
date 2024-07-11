@@ -1,74 +1,61 @@
-// import env from '@/config';
-// import ct from '@/constants';
-// import { emailHTML, log, printErrorMessage } from '@/utils';
-// import { contracts } from '@reg/contracts';
-// import { Resend } from 'resend';
+import { logger } from '@/common/winston.logger';
+import { envConfig } from '@/config/env.config';
+import { ct } from '@/constants';
+import { printErrorMessage } from '@/utils/error-message.util';
+import { verifyEmail } from '@lms/transactional';
+import { Resend } from 'resend';
 
-// class EmailService {
-//   private readonly resend: Resend;
+const { RESEND_API_KEY, EMAIL_FROM } = envConfig;
 
-//   constructor() {
-//     this.resend = new Resend(env.RESEND_API_KEY);
-//   }
+class EmailService {
+  private readonly resend: Resend;
 
-//   send = async (
-//     email: string,
-//     title: string,
-//     subject: string,
-//     message: string,
-//     content?: string,
-//   ) => {
-//     try {
-//       const response = await this.resend.emails.send({
-//         from: `${title} <${env.EMAIL_FROM}>`,
-//         to: email,
-//         subject,
-//         html: emailHTML(title, message, content),
-//       });
+  constructor() {
+    this.resend = new Resend(RESEND_API_KEY);
+  }
 
-//       log.info(response.data || response.error);
+  private send = async (params: {
+    email: string;
+    title: string;
+    subject: string;
+    html: any;
+  }) => {
+    const { email, title, subject, html } = params;
+    try {
+      const response = await this.resend.emails.send({
+        from: `${title} <${EMAIL_FROM}>`,
+        to: email,
+        subject,
+        html,
+      });
 
-//       if (!response.error)
-//         log.info(`✅  Email sent to '${email}' successfully!`);
+      if (!response.error)
+        logger.info(`✅  Email sent to '${email}' successfully!`);
 
-//       return response.error && !response.data ? false : true;
-//     } catch (error) {
-//       printErrorMessage(error, 'sendEmail()');
-//     }
-//   };
+      return response.error && !response.data ? false : true;
+    } catch (error) {
+      printErrorMessage(error, 'sendEmail()');
+    }
+  };
 
-//   sendVerificationEmail = async (
-//     email: string,
-//     token: string,
-//     { login = false } = {}, // defaults to false, optional configuration object
-//   ) => {
-//     const title = 'Email Verification: Registry App';
-//     const subject = 'Verify your email';
-//     const message = `Click the button below to verify your email address.`;
-//     const content = `
-//     <h1>Confirm your email address</h1>
-//     So we can send you important information and updates, we need to check this is the right email address for you. <br>
-//     <button href="${ct.base_url}${contracts.v1.users['verify-email'].path}?token=${token}&${login ? 'login=true' : null}" style="text-decoration: none; color: white; background-color: #4CAF50; padding: 10px 20px; border-radius: 5px;">
-//       Verify Email
-//     </button>`;
+  async sendVerificationEmail({
+    email,
+    verificationCode,
+  }: {
+    email: string;
+    verificationCode: string;
+  }) {
+    const title = ct.appName;
+    const subject = `${title}: Verify your email address`;
+    const html = verifyEmail({ verificationCode, appName: title });
 
-//     return await this.send(email, title, subject, message, content);
-//   };
+    return this.send({
+      email,
+      title,
+      subject,
+      html,
+    });
+  }
+}
 
-//   sendSecurityEmail = async (
-//     email: string,
-//     token: string,
-//     subject: string,
-//     message: string,
-//   ) => {
-//     const title = 'Security Alert:: Verification from Registry App';
-//     // const content = `
-//     // <a href="${ct.base_url}${contracts.v1.users['verify-email'].path}?token=${token}" style="text-decoration: none; color: white; background-color: #4CAF50; padding: 10px 20px; border-radius: 5px;">
-//     //   Verify Email
-//     // </a>`;
-
-//     return await this.send(email, title, subject, message, 'content');
-//   };
-// }
-
-// export const emailService = new EmailService();
+export const emailService = new EmailService();

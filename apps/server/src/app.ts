@@ -11,7 +11,7 @@ import { ct } from './constants';
 import { requestLogger } from './functions/request-logger';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { supplyAppVersionHeader } from './middlewares/version.middleware';
-import apiV1Router from './router/v1';
+import apiV1Router from './router/v1.router';
 
 const { isDev } = envConfig;
 

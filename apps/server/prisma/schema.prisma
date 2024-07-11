@@ -20,7 +20,7 @@ model User {
   password   String
   avatarId   String?  @unique
   avatar     Avatar?
-  role       Role
+  role       Role     @default(user)
   isVerified Boolean  @default(false)
   disabled   Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -40,4 +40,6 @@ model Avatar {
   url       String?
   user      User?   @relation(fields: [userId], references: [id])
   userId    String? @unique
+
+  @@index([userId], name: "userId")
 }

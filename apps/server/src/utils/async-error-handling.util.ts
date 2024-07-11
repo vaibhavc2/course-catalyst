@@ -20,7 +20,15 @@ type AsyncErrorHandler<T> = (
   next?: NextFunction,
 ) => Promise<T>;
 
-export const asyncErrorHandler = <T>(fn: AsyncErrorHandler<T>) => {
+type AsyncErrorHandlerWithNext<T> = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => Promise<T>;
+
+export const asyncErrorHandler = <T>(
+  fn: AsyncErrorHandler<T> | AsyncErrorHandlerWithNext<T>,
+) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     return Promise.resolve(fn(req, res, next)).catch((error: Error | unknown) =>
       next(error),
@@ -50,7 +58,7 @@ type Controller = {
  * @example
  * const healthController = autoWrapAsyncMethods({
  *  index: async (req: Request, res: Response) => {
- *   throw ApiError.notImplemented();
+ *   throw new ApiError().notImplemented();
  * },
  */
 
@@ -94,4 +102,23 @@ export function asyncFnWrapper<T extends any[], R>(
       return undefined;
     }
   };
+}
+
+// Utility to wrap all methods of a class with asyncFnWrapper
+export function wrapAsyncMethodsOfClass<T>(targetClass: T): T {
+  const handler = {
+    get(target: any, propKey: string, receiver: any) {
+      const origMethod = target[propKey];
+      // Check if the property is a function and not a constructor
+      if (typeof origMethod === 'function' && propKey !== 'constructor') {
+        return function (this: any, ...args: any[]) {
+          // Explicitly annotate 'this' as 'any'
+          // Assuming asyncFnWrapper is a higher-order function that takes a function and returns a new function
+          return asyncFnWrapper(origMethod.bind(this))(...args);
+        };
+      }
+      return Reflect.get(target, propKey, receiver);
+    },
+  };
+  return new Proxy(targetClass, handler);
 }

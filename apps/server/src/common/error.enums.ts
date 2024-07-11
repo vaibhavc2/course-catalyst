@@ -14,7 +14,7 @@ export enum StatusCode {
   SERVICE_UNAVAILABLE = 503,
 }
 
-export enum ErrorMessages {
+export enum ErrorMessage {
   MISSING_FIELDS = 'Please fill in all the required fields!',
   UNAUTHORIZED = 'Unauthorized!',
   FORBIDDEN = 'Forbidden!',

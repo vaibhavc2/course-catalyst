@@ -8,7 +8,7 @@ const redis = new Redis(REDIS_URL);
 
 // Listen for the initial connect event
 redis.on('connect', () => {
-  logger.info('=> Connected to Redis Database!');
+  logger.info('=> Connected to Redis Database!\n');
 });
 
 // Listen for the initial error event

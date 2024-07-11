@@ -5,15 +5,15 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
-    // "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "@reg/contracts": ["libs/contracts/index.ts"],
-      "@reg/db": ["libs/db/index.ts"],
-      "@reg/types": ["libs/types/index.ts"]
+      "@lms/*": ["./apps/*", "./libs/*"],
+      "@lms/transactional": ["./libs/transactional/*"],
+      "@lms/server": ["./apps/server/*"],
+      "@lms/client": ["./apps/client/*"]
     }
   },
   "exclude": ["node_modules"]

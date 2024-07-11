@@ -16,8 +16,8 @@
     "cm": "cz",
     "cm:offline": "git add . && cz",
     "cm:all": "git add . && cz && git push",
-    "dev:client": "nx run @lms/client:dev",
-    "dev:server": "nx run @lms/server:dev"
+    "client:dev": "nx run @lms/client:dev",
+    "server:dev": "nx run @lms/server:dev"
   },
   "keywords": [],
   "author": "",

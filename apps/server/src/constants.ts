@@ -15,6 +15,7 @@ export const ct = {
     credentials: true,
     methods: corsMethods,
   },
+  appName: 'CourseCatalyst',
   // chalk: {
   //   success: chalk.bold.green,
   //   error: chalk.bold.red,

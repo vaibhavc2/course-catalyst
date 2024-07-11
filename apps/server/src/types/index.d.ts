@@ -1,9 +1,11 @@
+import { User } from '@prisma/client';
+
 declare global {
   namespace Express {
     type MulterFile = Express.Multer.File;
     type MulterFiles = { [fieldname: string]: Express.Multer.File[] };
     interface Request {
-      user?: UserData;
+      user?: User;
       token?: string;
       file?: MulterFile;
       files?: MulterFiles;
@@ -11,4 +13,12 @@ declare global {
   }
 }
 
-export {};
+// Other global types
+interface StandardResponse<T> {
+  success: boolean;
+  message: string;
+  status?: number;
+  data?: T | null;
+}
+
+export { StandardResponse };

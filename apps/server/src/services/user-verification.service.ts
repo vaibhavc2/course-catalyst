@@ -1,5 +1,5 @@
 import prisma from '@/common/prisma.client';
-import * as argon2 from 'argon2';
+import { pwd } from './password.service';
 
 class UserVerification {
   async emailPassword(email: string, inputPassword: string): Promise<boolean> {
@@ -14,7 +14,7 @@ class UserVerification {
     }
 
     // Verify the password against the stored hash
-    const isValid = await argon2.verify(user.password, inputPassword);
+    const isValid = await pwd.verify(user.password, inputPassword);
 
     return isValid;
   }

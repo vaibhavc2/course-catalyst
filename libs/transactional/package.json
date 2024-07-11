@@ -1,0 +1,21 @@
+{
+  "name": "@lms/transactional",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev:dev": "email dev --port 5000",
+    "export": "email export"
+  },
+  "keywords": [],
+  "author": "Vaibhav Chopra",
+  "license": "ISC",
+  "dependencies": {
+    "@react-email/components": "0.0.21",
+    "react": "^18.3.1",
+    "react-email": "2.1.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.3"
+  }
+}

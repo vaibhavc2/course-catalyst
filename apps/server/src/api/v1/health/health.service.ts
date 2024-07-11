@@ -1,6 +1,6 @@
 import { CheckResult } from '@/common/dtos/health.dto';
 import { checkup } from '@/services/checkup.service';
-import { asyncFnWrapper } from '@/utils/async-error-handling.util';
+import { wrapAsyncMethodsOfClass } from '@/utils/async-error-handling.util';
 
 interface results {
   google?: CheckResult;
@@ -10,7 +10,7 @@ interface results {
 }
 
 class HealthService {
-  index = asyncFnWrapper(async () => {
+  async index() {
     const google = await checkup.httpCheck('http://google.com');
 
     const db = await checkup.dbCheck();
@@ -27,7 +27,7 @@ class HealthService {
     };
 
     return results;
-  });
+  }
 }
 
-export const healthService = new HealthService();
+export const healthService = wrapAsyncMethodsOfClass(new HealthService());
