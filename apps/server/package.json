@@ -1,7 +1,7 @@
 {
   "name": "@lms/server",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is an extensive REST API built with Express, Typescript and Prisma.",
   "main": "src/main.js",
   "scripts": {
     "build": "rm -rf dist/ && tsc && tsc-alias -p tsconfig.json",
@@ -19,8 +19,7 @@
     "prisma:reset": "pnpm prisma migrate reset --force",
     "prisma:seed": "pnpm prisma db seed --preview-feature",
     "prisma:push": "pnpm prisma db push",
-    "prisma:pull": "pnpm prisma db pull",
-    "swagger": "node ./docs/swagger.js"
+    "prisma:pull": "pnpm prisma db pull"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -45,7 +44,9 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "1.4.5-lts.1",
+    "rate-limiter-flexible": "^5.0.3",
     "resend": "^3.4.0",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^10.0.0",
     "winston": "^3.13.0",
@@ -63,6 +64,7 @@
     "@types/morgan": "~1.9.9",
     "@types/multer": "~1.4.11",
     "@types/node": "^20.14.9",
+    "@types/swagger-jsdoc": "~6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/uuid": "~10.0.0",
     "@types/ws": "~8.5.10",
@@ -72,7 +74,6 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "prisma": "^5.16.2",
-    "swagger-autogen": "^2.23.7",
     "tsc-alias": "^1.8.10",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3"

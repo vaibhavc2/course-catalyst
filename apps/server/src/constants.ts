@@ -1,6 +1,7 @@
 import { envConfig } from '#/config/env.config';
 import { Request, Response } from 'express';
-import { Options } from 'express-rate-limit';
+import { version, description } from '../package.json';
+import { CorsOptions } from 'cors';
 // import chalk from 'chalk';
 
 const { isDev, HOST, PORT, COOKIE_EXPIRES_IN, CLIENT_URL } = envConfig;
@@ -14,33 +15,23 @@ export const ct = {
     origin: [CLIENT_URL],
     credentials: true,
     methods: corsMethods,
-  },
+  } as CorsOptions,
   appName: 'CourseCatalyst',
-  // chalk: {
-  //   success: chalk.bold.green,
-  //   error: chalk.bold.red,
-  //   warning: chalk.bold.yellow,
-  //   highlight: chalk.bold.blue,
-  //   blue: chalk.blue,
-  //   red: chalk.red,
-  //   green: chalk.green,
-  //   yellow: chalk.yellow,
-  // },
+  appVersion: version,
+  appDescription: description,
   base_url: `${isDev ? 'http' : 'https'}://${HOST}${isDev ? ':' + PORT : ''}`,
-  rateLimitOptions: {
-    windowMs: 1 * 60 * 1000, // 1 minute
-    limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-    standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-    // store: ... , // Redis, Memcached, etc. See below. //TODO: Implement store
-  } as Partial<Options>,
-  swaggerOptions: {
-    explorer: true,
-    validatorUrl: null,
-    // customCss: '.swagger-ui .topbar { display: none }',
-  },
   morganOptions: {
     skip: (req: Request, res: Response) => res.statusCode === 304, // skip logging for 304 responses (Not Modified): swagger-ui
+  },
+  rateLimiter: {
+    global: {
+      requests: 100, // 100 requests
+      duration: 1 * 60, // per 1 minute(s)
+    },
+    sensitive: {
+      requests: 5, // 5 requests
+      duration: 1 * 60, // per 1 minute(s)
+    },
   },
   cookieOptions: {
     auth: {

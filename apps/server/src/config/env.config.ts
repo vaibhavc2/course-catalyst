@@ -8,8 +8,7 @@ const config = {
   HOST: env.get('HOST').default('localhost').asString(),
   NODE_ENV: env.get('NODE_ENV').default('development').asString(),
   COOKIE_EXPIRES_IN: env.get('COOKIE_EXPIRES_IN').default(7).asIntPositive(), // 7 days by default
-  CLIENT_URL: env.get('CLIENT_URL').default('*').asString(), //! change in production
-  APP_VERSION: env.get('APP_VERSION').default('1.0.0').asString(),
+  CLIENT_URL: env.get('CLIENT_URL').asString(), //! change in production to frontend url only!
   REDIS_URL: env.get('REDIS_URL').default('redis://localhost:6379').asString(),
   RESEND_API_KEY: env.get('RESEND_API_KEY').required().asString(),
   EMAIL_FROM: env.get('EMAIL_FROM').required().asString(),

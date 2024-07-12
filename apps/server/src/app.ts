@@ -1,17 +1,17 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Application } from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from '../swagger-output.json';
 import { envConfig } from './config/env.config';
 import { ct } from './constants';
 import { requestLogger } from './functions/request-logger';
+import { Docs } from './middlewares/docs.middleware';
 import { errorMiddleware } from './middlewares/error.middleware';
+import { globalApiRateLimiter } from './middlewares/rate-limiter.middleware';
 import { supplyAppVersionHeader } from './middlewares/version.middleware';
-import apiV1Router from './router/v1.router';
+import apiRouter from './router';
+import { swaggerSpec } from './common/docs/swagger.options';
 
 const { isDev } = envConfig;
 
@@ -55,30 +55,23 @@ export class App {
     this.app.use(supplyAppVersionHeader);
 
     // rate limiter: api rate limiter (throttling)
-    this.app.use(rateLimit(ct.rateLimitOptions));
+    this.app.use(globalApiRateLimiter); // global rate limiter
 
     // logs error requests in development mode
     if (isDev) this.app.use(morgan(requestLogger, ct.morganOptions));
 
-    // api documentation: Swagger UI : http://localhost:3000/api-docs
-    this.app.use(
-      '/api-docs',
-      swaggerUi.serve,
-      swaggerUi.setup(swaggerDocument, ct.swaggerOptions),
-    );
+    // use the api router: all api routes (global router)
+    this.app.use('/', apiRouter);
 
-    // use routing of the app
-    this.useRouting();
+    // api documentation: Swagger UI : http://localhost:3000/api-docs
+    const { swaggerUi, swaggerUiSetup, secureDocs, serveDocs } = Docs;
+    this.app.use('/api-docs', secureDocs, swaggerUi, swaggerUiSetup); // serve Swagger UI, only in non-production environments (secureDocs middleware)
+    serveDocs(this.app);
+
+    console.log(swaggerSpec); //!!! remove this line : DEBUGGING
 
     // error handler middlewares //!!! should be the last middlewares
-    this.app.use(
-      errorMiddleware.routeNotFound,
-      errorMiddleware.logger,
-      errorMiddleware.handler,
-    );
-  }
-
-  private useRouting() {
-    this.app.use('/api/v1', apiV1Router);
+    const { routeNotFound, logger, handler } = errorMiddleware;
+    this.app.use(routeNotFound, logger, handler);
   }
 }
