@@ -1,10 +1,10 @@
-// import env from '@/config';
+// import env from '#/config';
 // import {
 //   deleteLocalFile,
 //   getErrorMessage,
 //   log,
 //   printErrorMessage,
-// } from '@/utils';
+// } from '#/utils';
 // import { UploadApiResponse, v2 } from 'cloudinary';
 
 // class CloudinaryService {

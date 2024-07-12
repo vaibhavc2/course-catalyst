@@ -1,4 +1,4 @@
-import { envConfig } from '@/config/env.config';
+import { envConfig } from '#/config/env.config';
 import { Request, Response } from 'express';
 import { Options } from 'express-rate-limit';
 // import chalk from 'chalk';

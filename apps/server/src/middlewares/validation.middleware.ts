@@ -1,8 +1,7 @@
-import { logger } from '@/common/winston.logger';
-import { ApiError } from '@/utils/api-error.util';
-import { asyncErrorHandler } from '@/utils/async-error-handling.util';
-import { getErrorMessage } from '@/utils/error-message.util';
-import { zodErrors } from '@/utils/zod-errors.util';
+import { ApiError } from '#/utils/api-error.util';
+import { asyncErrorHandler } from '#/utils/async-error-handling.util';
+import { getErrorMessage } from '#/utils/error-message.util';
+import { zodErrors } from '#/utils/zod-errors.util';
 import { NextFunction, Request, Response } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 
@@ -33,7 +32,6 @@ class ValidationMiddleware {
     // validate the request body, query, params, and headers against the schema
     asyncErrorHandler(
       async (req: Request, res: Response, next: NextFunction) => {
-        logger.info(JSON.stringify(req.body, null, 2)); // log only in dev mode
         try {
           await schema.parseAsync({
             body: req.body,

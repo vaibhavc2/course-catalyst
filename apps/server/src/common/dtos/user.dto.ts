@@ -1,4 +1,4 @@
-import { StandardResponse } from '@/types';
+import { StandardResponse } from '#/types';
 import { Prisma, User } from '@prisma/client';
 
 export interface RegisterDTO {

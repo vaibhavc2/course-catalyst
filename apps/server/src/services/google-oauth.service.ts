@@ -1,6 +1,6 @@
-// import env from '@/config';
-// import ct from '@/constants';
-// import { printErrorMessage } from '@/utils';
+// import env from '#/config';
+// import ct from '#/constants';
+// import { printErrorMessage } from '#/utils';
 // import { contracts } from '@reg/contracts';
 // import { OAuth2Client } from 'google-auth-library';
 

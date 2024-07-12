@@ -1,7 +1,7 @@
-import { StatusCode } from '@/common/error.enums';
-import { ApiError } from '@/utils/api-error.util';
-import { ApiResponse } from '@/utils/api-response.util';
-import { autoWrapAsyncMethods } from '@/utils/async-error-handling.util';
+import { StatusCode } from '#/common/error.enums';
+import { ApiError } from '#/utils/api-error.util';
+import { ApiResponse } from '#/utils/api-response.util';
+import { autoWrapAsyncMethods } from '#/utils/async-error-handling.util';
 import { Request, Response } from 'express';
 import { healthService } from './health.service';
 

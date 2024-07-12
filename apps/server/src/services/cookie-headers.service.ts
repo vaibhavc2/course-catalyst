@@ -1,4 +1,4 @@
-// import ct from '@/constants';
+// import ct from '#/constants';
 
 // type CookieOptions = {
 //   maxAge?: number;

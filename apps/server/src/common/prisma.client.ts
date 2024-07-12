@@ -1,6 +1,6 @@
-import { envConfig } from '@/config/env.config';
-import { pwd } from '@/services/password.service';
-import { getErrorMessage } from '@/utils/error-message.util';
+import { envConfig } from '#/config/env.config';
+import { pwd } from '#/services/password.service';
+import { getErrorMessage } from '#/utils/error-message.util';
 import { PrismaClient } from '@prisma/client';
 import chalk from 'chalk';
 import util from 'util';
@@ -82,13 +82,13 @@ const prisma = new PrismaClient(
     },
     // logs all queries
     async $allOperations({ operation, model, args, query }) {
-      try {
-        const start = performance.now();
-        const result = await query(args);
-        const end = performance.now();
-        const time = end - start;
+      if (isDev) {
+        try {
+          const start = performance.now();
+          const result = await query(args);
+          const end = performance.now();
+          const time = end - start;
 
-        if (isDev) {
           // Query ${operation} on model ${model} took ${end - start} ms`);
           logger.info(
             chalk.green('=> Query :: ') +
@@ -100,13 +100,15 @@ const prisma = new PrismaClient(
                 { showHidden: false, depth: null, colors: true },
               ),
           );
+
+          return result;
+        } catch (error) {
+          logger.error(
+            '!! Database error: ' + isDev ? chalk.red(error) : error,
+          );
+
+          throw new Error(getErrorMessage(error)); // Re-throw the error for further handling
         }
-
-        return result;
-      } catch (error) {
-        logger.error('!! Database error: ' + isDev ? chalk.red(error) : error);
-
-        throw new Error(getErrorMessage(error)); // Re-throw the error for further handling
       }
     },
   },

@@ -1,4 +1,4 @@
-import { envConfig } from '@/config/env.config';
+import { envConfig } from '#/config/env.config';
 import { NextFunction, Request, Response } from 'express';
 
 const { APP_VERSION } = envConfig;

@@ -1,4 +1,4 @@
-import prisma from '@/common/prisma.client';
+import prisma from '#/common/prisma.client';
 import { pwd } from './password.service';
 
 class UserVerification {

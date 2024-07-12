@@ -1,4 +1,4 @@
-import { logger } from '@/common/winston.logger';
+import { logger } from '#/common/winston.logger';
 
 type ErrorWithMessage = {
   message: string;

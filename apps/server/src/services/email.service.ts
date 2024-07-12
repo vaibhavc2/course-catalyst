@@ -1,7 +1,7 @@
-import { logger } from '@/common/winston.logger';
-import { envConfig } from '@/config/env.config';
-import { ct } from '@/constants';
-import { printErrorMessage } from '@/utils/error-message.util';
+import { logger } from '#/common/winston.logger';
+import { envConfig } from '#/config/env.config';
+import { ct } from '#/constants';
+import { printErrorMessage } from '#/utils/error-message.util';
 import { renderVerifyEmail } from '@lms/transactional';
 import { Resend } from 'resend';
 

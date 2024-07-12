@@ -1,7 +1,7 @@
-import { RegisterDTO } from '@/common/dtos/user.dto';
-import { ApiError } from '@/utils/api-error.util';
-import { ApiResponse } from '@/utils/api-response.util';
-import { autoWrapAsyncMethods } from '@/utils/async-error-handling.util';
+import { RegisterDTO } from '#/common/dtos/user.dto';
+import { ApiError } from '#/utils/api-error.util';
+import { ApiResponse } from '#/utils/api-response.util';
+import { autoWrapAsyncMethods } from '#/utils/async-error-handling.util';
 import { Request, Response } from 'express';
 import { userService } from './users.service';
 

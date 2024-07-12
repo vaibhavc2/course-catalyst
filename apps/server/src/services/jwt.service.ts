@@ -1,6 +1,6 @@
-import { envConfig } from '@/config/env.config';
-import { wrapAsyncMethodsOfClass } from '@/utils/async-error-handling.util';
-import { getErrorMessage } from '@/utils/error-message.util';
+import { envConfig } from '#/config/env.config';
+import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
+import { getErrorMessage } from '#/utils/error-message.util';
 import { sign, verify } from 'jsonwebtoken';
 
 const {

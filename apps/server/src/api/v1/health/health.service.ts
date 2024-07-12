@@ -1,6 +1,6 @@
-import { CheckResult } from '@/common/dtos/health.dto';
-import { checkup } from '@/services/checkup.service';
-import { wrapAsyncMethodsOfClass } from '@/utils/async-error-handling.util';
+import { CheckResult } from '#/common/dtos/health.dto';
+import { checkup } from '#/services/checkup.service';
+import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
 
 interface results {
   google?: CheckResult;

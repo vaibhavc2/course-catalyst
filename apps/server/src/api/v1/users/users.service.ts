@@ -1,10 +1,10 @@
-import { RegisterDTO, UserServiceDTO } from '@/common/dtos/user.dto';
-import prisma from '@/common/prisma.client';
-import redis from '@/common/redis.client';
-import { emailService } from '@/services/email.service';
-import { jwt } from '@/services/jwt.service';
-import { otp } from '@/services/otp.service';
-import { wrapAsyncMethodsOfClass } from '@/utils/async-error-handling.util';
+import { RegisterDTO, UserServiceDTO } from '#/common/dtos/user.dto';
+import prisma from '#/common/prisma.client';
+import redis from '#/common/redis.client';
+import { emailService } from '#/services/email.service';
+import { jwt } from '#/services/jwt.service';
+import { otp } from '#/services/otp.service';
+import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
 
 class UserService {
   async register({ name, email, password }: RegisterDTO) {
@@ -17,7 +17,7 @@ class UserService {
     if (existingUser)
       return {
         success: false,
-        message: 'User already exists!',
+        message: 'User already exists! Please login instead.',
       };
 
     const otpCode = otp.generateSecureOTP(6).string;

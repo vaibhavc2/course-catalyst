@@ -1,7 +1,7 @@
-import { CheckResult } from '@/common/dtos/health.dto';
-import { logger } from '@/common/winston.logger';
-import { ct } from '@/constants';
-import { asyncFnWrapper } from '@/utils/async-error-handling.util';
+import { CheckResult } from '#/common/dtos/health.dto';
+import { logger } from '#/common/winston.logger';
+import { ct } from '#/constants';
+import { asyncFnWrapper } from '#/utils/async-error-handling.util';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import chalk from 'chalk';

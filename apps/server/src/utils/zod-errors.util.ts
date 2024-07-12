@@ -1,4 +1,4 @@
-import { envConfig } from '@/config/env.config';
+import { envConfig } from '#/config/env.config';
 
 const { isDev } = envConfig;
 

@@ -1,5 +1,5 @@
-import healthRouter from '@/api/v1/health/health.routes';
-import userRouter from '@/api/v1/users/users.routes';
+import healthRouter from '#/api/v1/health/health.routes';
+import userRouter from '#/api/v1/users/users.routes';
 import express from 'express';
 
 // Create a new router instance

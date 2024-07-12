@@ -1,5 +1,5 @@
-import { ApiError } from '@/utils/api-error.util';
-import { printErrorMessage } from '@/utils/error-message.util';
+import { ApiError } from '#/utils/api-error.util';
+import { printErrorMessage } from '#/utils/error-message.util';
 import * as argon2 from 'argon2';
 
 class passwordService {

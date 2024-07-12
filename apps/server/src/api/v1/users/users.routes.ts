@@ -1,5 +1,5 @@
-import { RegisterSchema } from '@/common/schema/register.schema';
-import { validation } from '@/middlewares/validation.middleware';
+import { RegisterSchema } from '#/common/schema/register.schema';
+import { validation } from '#/middlewares/validation.middleware';
 import express from 'express';
 import { userController } from './users.controller';
 

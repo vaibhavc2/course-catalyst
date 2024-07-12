@@ -1,4 +1,4 @@
-import { zodErrors } from '@/utils/zod-errors.util';
+import { zodErrors } from '#/utils/zod-errors.util';
 import * as z from 'zod';
 
 export const RegisterSchema = z.object({
