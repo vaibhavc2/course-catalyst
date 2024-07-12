@@ -68,8 +68,6 @@ export class App {
     this.app.use('/api-docs', secureDocs, swaggerUi, swaggerUiSetup); // serve Swagger UI, only in non-production environments (secureDocs middleware)
     serveDocs(this.app);
 
-    console.log(swaggerSpec); //!!! remove this line : DEBUGGING
-
     // error handler middlewares //!!! should be the last middlewares
     const { routeNotFound, logger, handler } = errorMiddleware;
     this.app.use(routeNotFound, logger, handler);

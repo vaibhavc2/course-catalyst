@@ -16,25 +16,25 @@ class ApiResponseService {
 
 export class ApiResponse {
   private readonly res: Response;
-  constructor(private readonly response: Response) {
+  constructor(response: Response) {
     this.res = response;
   }
 
-  public send(statusCode: number, message?: string, data?: any) {
+  send(statusCode: number, message?: string, data?: any) {
     return this.res
       .status(statusCode)
       .json(new ApiResponseService(statusCode, message, data));
   }
 
-  public success(message?: string, data?: any) {
+  success(message?: string, data?: any) {
     return this.send(200, message, data);
   }
 
-  public created(message?: string, data?: any) {
+  created(message?: string, data?: any) {
     return this.send(201, message, data);
   }
 
-  public error(
+  error(
     statusCode: number = 500,
     message: string = 'Internal Server Error!',
     data?: any,
@@ -42,26 +42,23 @@ export class ApiResponse {
     return this.send(statusCode, message, data);
   }
 
-  public badRequest(message?: string, data?: any) {
+  badRequest(message?: string, data?: any) {
     return this.send(400, message, data);
   }
 
-  public unauthorized(message?: string, data?: any) {
+  unauthorized(message?: string, data?: any) {
     return this.send(401, message, data);
   }
 
-  public forbidden(message?: string, data?: any) {
+  forbidden(message?: string, data?: any) {
     return this.send(403, message, data);
   }
 
-  public notFound(message?: string, data?: any) {
+  notFound(message?: string, data?: any) {
     return this.send(404, message, data);
   }
 
-  public internalServerError(
-    message: string = 'Internal Server Error!',
-    data?: any,
-  ) {
+  internalServerError(message: string = 'Internal Server Error!', data?: any) {
     return this.send(500, message, data);
   }
 }

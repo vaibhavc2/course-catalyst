@@ -18,9 +18,7 @@ class ValidationMiddleware {
 
         // If there are missing fields then run next error middleware
         if (missingFields.length) {
-          return next(
-            new ApiError().badRequest(zodErrors.required(missingFields)),
-          );
+          return next(ApiError.badRequest(zodErrors.required(missingFields)));
         }
 
         // If no missing fields then run router code
@@ -44,13 +42,13 @@ class ValidationMiddleware {
         } catch (error: unknown) {
           if (error instanceof ZodError) {
             next(
-              new ApiError().custom(
+              ApiError.custom(
                 400,
                 `${error.issues.map((issue) => issue.message).join(' ')}`,
               ),
             );
           } else {
-            next(new ApiError().custom(400, `${getErrorMessage(error)}`));
+            next(ApiError.custom(400, `${getErrorMessage(error)}`));
           }
         }
       },

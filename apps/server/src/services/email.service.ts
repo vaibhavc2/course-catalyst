@@ -33,6 +33,8 @@ class EmailService {
 
       if (!response.error)
         logger.info(`✅  Email sent to '${email}' successfully!`);
+      else
+        throw new Error(`❌  Email sending failed: ${response.error.message}`);
 
       return response.error && !response.data ? false : true;
     } catch (error) {

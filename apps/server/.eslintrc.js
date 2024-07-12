@@ -31,6 +31,7 @@ module.exports = {
     'tools/',
     'webpack/',
     'prisma/',
+    'public/',
   ],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',

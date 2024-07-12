@@ -59,7 +59,7 @@ type Controller = {
  * @example
  * const healthController = autoWrapAsyncMethods({
  *  index: async (req: Request, res: Response) => {
- *   throw new ApiError().notImplemented();
+ *   throw ApiError.notImplemented();
  * },
  */
 

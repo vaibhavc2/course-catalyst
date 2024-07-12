@@ -18,7 +18,7 @@ class passwordService {
       })
       .catch((error) => {
         printErrorMessage(error, 'passwordService.hash');
-        throw new ApiError().custom(500, 'Error hashing password.');
+        throw ApiError.custom(500, 'Error hashing password.');
       });
   };
 
@@ -30,7 +30,7 @@ class passwordService {
       })
       .catch((error) => {
         printErrorMessage(error, 'passwordService.verify');
-        throw new ApiError().custom(500, 'Error verifying password.');
+        throw ApiError.custom(500, 'Error verifying password.');
       });
   };
 }

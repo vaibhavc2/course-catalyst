@@ -8,7 +8,13 @@ const { isProd } = envConfig;
 
 export class Docs {
   static swaggerUi = swaggerUi.serve;
-  static swaggerUiSetup = swaggerUi.setup(swaggerSpec);
+
+  static swaggerUiSetup = swaggerUi.setup(swaggerSpec, {
+    // ??? extend the Swagger UI with custom CSS and JS if needed
+    customCss: '.swagger-ui .topbar { display: none; }',
+    // customCssUrl: '/swagger.css',
+    // customJs: '/swagger.js',
+  });
 
   static getSwaggerUi() {
     return Docs.swaggerUi;

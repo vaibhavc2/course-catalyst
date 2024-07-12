@@ -15,9 +15,7 @@ declare global {
 
 // Other global types
 interface StandardResponse<T> {
-  success: boolean;
   message: string;
-  status?: number;
   data?: T | null;
 }
 

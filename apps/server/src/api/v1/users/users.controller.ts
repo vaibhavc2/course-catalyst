@@ -9,18 +9,13 @@ export const userController = autoWrapAsyncMethods({
   register: async (req: Request, res: Response) => {
     const { name, email, password }: RegisterDTO = req.body;
 
-    const { success, status, message, data } =
+    const { message, data } =
       (await userService.register({
         name,
         email,
         password,
       })) ?? {};
 
-    if (!success) {
-      if (status) throw new ApiError().custom(status, message);
-      throw new ApiError().badRequest(message);
-    } else {
-      return new ApiResponse(res).success(message, data);
-    }
+    return new ApiResponse(res).success(message, data);
   },
 });
