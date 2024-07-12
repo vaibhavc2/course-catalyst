@@ -44,6 +44,9 @@ export const ct = {
     },
   },
   checkup: {
+    http: {
+      url: 'https://google.com',
+    },
     disk: {
       warningThreshold: 75, // 75% disk space warning
       criticalThreshold: 90, // 90% disk space critical

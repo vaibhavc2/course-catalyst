@@ -1,23 +1,34 @@
 import { CheckResult } from '#/common/dtos/health.dto';
+import { StatusCode } from '#/common/error.enums';
+import redis from '#/common/redis.client';
 import { logger } from '#/common/winston.logger';
 import { ct } from '#/constants';
 import { asyncFnWrapper } from '#/utils/async-error-handling.util';
+import { getErrorMessage } from '#/utils/error-message.util';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+
 const execAsync = promisify(exec);
 
 class CheckupService {
   httpCheck = asyncFnWrapper(async (url: string): Promise<CheckResult> => {
-    // perform a http check using axios
-    const response = await axios.get(url);
+    const startTime = Date.now();
+    const response = await axios.get(url); // perform a http check using axios
+    const endTime = Date.now();
 
-    if (response.status === 200) {
+    if (response.status === StatusCode.OK) {
       return {
         success: true,
-        message: 'HTTP check successful',
+        message: `HTTP check successful at url: ${url}`,
+        info: {
+          response: {
+            status: StatusCode.OK,
+            time: `${endTime - startTime}ms`,
+          },
+        },
       };
     } else {
       return {
@@ -29,21 +40,27 @@ class CheckupService {
 
   dbCheck = asyncFnWrapper(async (): Promise<CheckResult> => {
     try {
-      // perform a db check using prisma with a timeout of 5 seconds
       const prisma = new PrismaClient();
       await prisma.$connect();
       await prisma.$disconnect();
 
+      await redis.set('x', 'y');
+      await redis.del(['x']);
+
       return {
         success: true,
         message: 'Database connection successful.',
+        info: 'Prisma and Redis are up and running! Both are working correctly.',
       };
     } catch (error) {
-      logger.error('Database check failed: ' + chalk.red(error));
+      logger.error(
+        'Database check failed: ' + chalk.red(getErrorMessage(error)),
+      );
 
       return {
         success: false,
-        message: 'Database connection failed!',
+        message: `Database connection failed!`,
+        info: `One or both of Prisma and Redis failed! Errors: ${getErrorMessage(error)}`,
       };
     }
   });
@@ -73,6 +90,7 @@ class CheckupService {
       } else if (usedPercentage < ct.checkup.disk.criticalThreshold) {
         return {
           success: true,
+          warn: true,
           message: `Disk check warning: Usage exceeds ${ct.checkup.disk.warningThreshold}%. Usage: ${usedPercentage}%.`,
           info: {
             total: totalSpace,
@@ -127,6 +145,7 @@ class CheckupService {
       } else if (usedPercentage < ct.checkup.memory.criticalThreshold) {
         return {
           success: true,
+          warn: true,
           message: `Memory check warning: Usage exceeds ${ct.checkup.memory.warningThreshold}%. Usage: ${usedPercentage.toFixed(2)}%.`,
           info: {
             total: `${totalMemory} MB`,

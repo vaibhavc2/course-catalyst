@@ -57,14 +57,14 @@ type Controller = {
  * @param controller The controller object to wrap
  * @returns The wrapped controller object
  * @example
- * const healthController = autoWrapAsyncMethods({
+ * const healthController = autoWrapAsyncHandlers({
  *  index: async (req: Request, res: Response) => {
  *   throw ApiError.notImplemented();
  * },
  */
 
 // Auto-wrap utility function to handle errors in async functions (req, res, next)
-export function autoWrapAsyncMethods<T extends Controller>(controller: T): T {
+export function autoWrapAsyncHandlers<T extends Controller>(controller: T): T {
   const tempWrappedController: Record<string, any> = {};
   Object.keys(controller).forEach((key) => {
     const originalMethod: ControllerMethod = controller[key];

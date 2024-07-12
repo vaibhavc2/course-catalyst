@@ -7,10 +7,10 @@ class ApiResponseService {
   data: any;
 
   constructor(statusCode: number, message?: string, data?: any) {
+    this.success = statusCode < 400;
     this.statusCode = statusCode;
     this.message = message || 'No message provided';
     this.data = data;
-    this.success = statusCode < 400;
   }
 }
 
