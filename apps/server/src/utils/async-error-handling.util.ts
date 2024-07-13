@@ -99,7 +99,7 @@ export function asyncFnWrapper<T extends any[], R>(
       return await fn(...args);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      logger.error('!! An error occurred: ' + chalk.red(`${errorMessage}`));
+      logger.error('An error occurred: ' + chalk.red(`${errorMessage}`));
 
       throw new Error(errorMessage);
     }

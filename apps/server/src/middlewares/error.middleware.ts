@@ -39,21 +39,35 @@ export class ErrorMiddleware {
     if (error instanceof ApiError) {
       const { statusCode, message } = error;
       return this.sendErrorResponse(statusCode, message, res);
-    }
-    // else if (
-    //   error instanceof Error &&
-    //   error.name === 'MongoError' &&
-    //   error.code === 11000
-    // ) {
-    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Duplicate key error!', res);
-    // } else if (error instanceof Error && error.name === 'ValidationError') {
-    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, error.message, res);
-    // } else if (error instanceof Error && error.name === 'CastError') {
-    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Invalid ID!', res);
-    // } else if (error instanceof Error && error.name === 'SyntaxError') {
-    //   return this.sendErrorResponse(StatusCode.UNAUTHORIZED, 'Invalid JSON!', res);
-    // }
-    else if (error instanceof Error && error.name === 'JsonWebTokenError') {
+    } else if (
+      error instanceof Error &&
+      error.name === 'MongoError' &&
+      error.code === 11000
+    ) {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        'Duplicate key error!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'ValidationError') {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        error.message,
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'CastError') {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        'Invalid ID!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'SyntaxError') {
+      return this.sendErrorResponse(
+        StatusCode.UNAUTHORIZED,
+        'Invalid JSON!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'JsonWebTokenError') {
       return this.sendErrorResponse(
         StatusCode.UNAUTHORIZED,
         'Invalid token!',
@@ -65,9 +79,28 @@ export class ErrorMiddleware {
         'Token expired!',
         res,
       );
+      // redis errors
+    } else if (error instanceof Error && error.name === 'ReplyError') {
+      return this.sendErrorResponse(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Redis error!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'AbortError') {
+      return this.sendErrorResponse(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Redis connection error!',
+        res,
+      );
+    } else if (error instanceof Error && error.name === 'AggregateError') {
+      return this.sendErrorResponse(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Promise.all error!',
+        res,
+      );
     } else {
       return this.sendErrorResponse(
-        error.code || StatusCode.INTERNAL_SERVER_ERROR,
+        error.statusCode || StatusCode.INTERNAL_SERVER_ERROR,
         error.message || 'Something went wrong!',
         res,
       );

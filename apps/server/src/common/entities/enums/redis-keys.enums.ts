@@ -1,5 +1,5 @@
 export enum REDIS_KEY_PREFIXES {
-  ACTIVATION = 'activation::',
-  SESSION = 'session::',
-  // Add more key prefixes here
+  ACTIVATION = 'activation',
+  SESSION = 'session',
+  INVALIDATED = 'invalidated',
 }

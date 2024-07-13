@@ -1,4 +1,4 @@
-import { StandardResponse } from '#/types';
+import { StandardResponseDTO } from '#/types';
 
 export interface CheckResult {
   success: boolean;
@@ -15,5 +15,5 @@ interface results {
 }
 
 export interface HealthServiceDTO {
-  index: () => Promise<StandardResponse<{ results: results }>>;
+  index: () => Promise<StandardResponseDTO<{ results: results }>>;
 }

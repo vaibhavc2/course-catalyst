@@ -1,26 +1,51 @@
 import {
   LoginDTO,
+  LogoutDTO,
+  RefreshDTO,
   RegisterDTO,
   SendVerificationEmailDTO,
-  UserServiceDTO,
+  UserDTO,
   VerifyDTO,
 } from '#/common/entities/dtos/users.dto';
+import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
 import { REDIS_KEY_PREFIXES } from '#/common/entities/enums/redis-keys.enums';
 import prisma from '#/common/prisma.client';
-import redis from '#/common/redis.client';
 import { envConfig } from '#/config/env.config';
 import { emailService } from '#/services/email.service';
 import { jwt } from '#/services/jwt.service';
 import { otp } from '#/services/otp.service';
 import { pwd } from '#/services/password.service';
-import { redisKey } from '#/services/redis-key.service';
+import { RedisService, redisService } from '#/services/redis.service';
+import { StandardResponseDTO } from '#/types';
 import { ApiError } from '#/utils/api-error.util';
 import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
 import { convertExpiry } from '#/utils/expiry-converter.util';
+import { User } from '@prisma/client';
 
-const { ACTIVATION_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } = envConfig;
+const { ACTIVATION_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY, ACCESS_TOKEN_EXPIRY } =
+  envConfig;
 
-class UserService {
+interface Tokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface UserServiceDTO {
+  register: (data: RegisterDTO) => Promise<StandardResponseDTO<{ user: User }>>;
+  login: (
+    data: LoginDTO,
+  ) => Promise<StandardResponseDTO<{ user: UserDTO; tokens: Tokens }>>;
+  sendVerificationEmail: (
+    data: SendVerificationEmailDTO,
+  ) => Promise<StandardResponseDTO<{ email: string }>>;
+  verify: (data: VerifyDTO) => Promise<StandardResponseDTO<{ user: User }>>;
+  logout: (data: LogoutDTO) => Promise<StandardResponseDTO<null>>;
+  refresh: (
+    data: RefreshDTO,
+  ) => Promise<StandardResponseDTO<{ tokens: Tokens }>>;
+}
+
+class UserService implements UserServiceDTO {
   private async generateActivationTokenAndSendEmail(email: string) {
     // Generate OTP code
     const otpCode = otp.generateSecureOTP(6).string;
@@ -41,8 +66,8 @@ class UserService {
       throw ApiError.internal('Failed to send email! Please try again.');
 
     // Store activation token in Redis with expiry
-    const redisResponse = await redis.setex(
-      redisKey.getActivationKey(email),
+    const redisResponse = await redisService.setex(
+      RedisService.createKey('ACTIVATION', email),
       convertExpiry(ACTIVATION_TOKEN_EXPIRY),
       activationToken,
     );
@@ -87,7 +112,7 @@ class UserService {
     };
   }
 
-  async login({ email, password }: LoginDTO) {
+  async login({ email, password, deviceId }: LoginDTO) {
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -110,16 +135,19 @@ class UserService {
       throw ApiError.forbidden('Please verify your email first!');
 
     // Generate access token
-    const accessToken = await jwt.generateAccessToken(user.id);
+    const accessToken = await jwt.generateAccessToken({ userId: user.id });
 
     // Generate refresh token
-    const refreshToken = await jwt.generateRefreshToken(user.id);
+    const refreshToken = await jwt.generateRefreshToken({ userId: user.id });
 
     // Store refresh token in Redis with expiry (store session)
-    await redis.setex(
-      redisKey.getSessionKey(user.id),
+    await redisService.hmset_with_expiry(
+      RedisService.createKey('SESSION', user.id, deviceId),
       convertExpiry(REFRESH_TOKEN_EXPIRY),
-      refreshToken,
+      {
+        deviceId: deviceId,
+        refreshToken: refreshToken,
+      },
     );
 
     return {
@@ -153,16 +181,20 @@ class UserService {
 
   async verify({ email, otpCode }: VerifyDTO) {
     // Get activation token from Redis
-    const activationToken = await redis.get(redisKey.getActivationKey(email));
+    const activationTokenKey = RedisService.createKey('ACTIVATION', email);
+    const activationToken = await redisService.get(activationTokenKey);
 
     if (!activationToken)
       throw ApiError.badRequest('Activation token expired! Please try again.');
 
     // Verify activation token
-    const { email: tokenEmail, otpCode: tokenOtpCode } =
-      (await jwt.verifyActivationToken(activationToken)) ?? {};
+    const {
+      email: tokenEmail,
+      otpCode: tokenOtpCode,
+      type,
+    } = (await jwt.verifyActivationToken(activationToken)) ?? {};
 
-    if (!tokenEmail || !tokenOtpCode)
+    if (!tokenEmail || !tokenOtpCode || type !== JWTTOKENS.ACTIVATION)
       throw ApiError.badRequest('Invalid activation token! Please try again.');
 
     // Check if email and OTP code match
@@ -183,7 +215,7 @@ class UserService {
       throw ApiError.internal('Failed to verify user! Please try again.');
 
     // Delete activation token from Redis
-    await redis.del(`${REDIS_KEY_PREFIXES.ACTIVATION}${email}`);
+    await redisService.del(activationTokenKey);
 
     return {
       message: 'User verified successfully!',
@@ -191,17 +223,78 @@ class UserService {
     };
   }
 
-  async logout(userId: string) {
+  async logout({ deviceId, userId }: LogoutDTO) {
     // Delete refresh token from Redis
-    await redis.del(redisKey.getSessionKey(userId));
+    await redisService.del(RedisService.createKey('SESSION', userId, deviceId));
 
     return {
       message: 'Logged out successfully!',
       data: null,
     };
   }
+
+  async refresh({ deviceId, refreshToken }: RefreshDTO) {
+    // Verify refresh token
+    const { userId, type } = (await jwt.verifyRefreshToken(refreshToken)) ?? {};
+
+    if (!userId || type !== JWTTOKENS.REFRESH)
+      throw ApiError.unauthorized('Invalid token! Please login.');
+
+    // Check if session exists in Redis
+    const sessionKey = RedisService.createKey('SESSION', userId, deviceId);
+    const session = await redisService.hmget(sessionKey);
+
+    if (!session) throw ApiError.unauthorized('Session expired! Please login.');
+
+    // Check if device ID matches
+    if (session[0] !== deviceId)
+      throw ApiError.unauthorized('Invalid device! Please login.');
+
+    // Check if refresh token matches
+    if (session[1] !== refreshToken)
+      throw ApiError.unauthorized('Invalid token! Please login.');
+
+    // Delete old refresh token
+    await redisService.del(sessionKey);
+
+    // Generate new access token
+    const accessToken = await jwt.generateAccessToken({ userId });
+
+    // Generate new refresh token
+    const newRefreshToken = await jwt.generateRefreshToken({ userId });
+
+    // Store new refresh token in Redis with expiry (store session)
+    await redisService.hmset_with_expiry(
+      sessionKey,
+      convertExpiry(REFRESH_TOKEN_EXPIRY),
+      {
+        deviceId: deviceId,
+        refreshToken: refreshToken,
+      },
+    );
+
+    return {
+      message: 'Token refreshed successfully!',
+      data: { tokens: { accessToken, refreshToken: newRefreshToken } },
+    };
+  }
+
+  async logoutAllDevices({ userId }: { userId: string }) {
+    // Delete all sessions of user from Redis
+    await redisService.del_keys(RedisService.createKey('SESSION', userId, '*'));
+
+    // Store the current timestamp in Redis (to invalidate access tokens)
+    await redisService.setex(
+      RedisService.createKey('INVALIDATED', userId),
+      convertExpiry(ACCESS_TOKEN_EXPIRY),
+      Date.now().toString(),
+    );
+
+    return {
+      message: 'Logged out from all devices successfully!',
+      data: null,
+    };
+  }
 }
 
-export const userService: UserServiceDTO = wrapAsyncMethodsOfClass(
-  new UserService(),
-);
+export const userService = wrapAsyncMethodsOfClass(new UserService());

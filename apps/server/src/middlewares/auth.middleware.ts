@@ -1,5 +1,7 @@
+import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
 import prisma from '#/common/prisma.client';
 import { jwt } from '#/services/jwt.service';
+import { RedisService, redisService } from '#/services/redis.service';
 import { ApiError } from '#/utils/api-error.util';
 import {
   asyncErrorHandler,
@@ -19,7 +21,7 @@ type VerifySkipNext = { verified?: boolean; skipNext?: boolean } | undefined;
  *
  * @export
  * @class Auth
- * @typedef {Auth}
+ * @description Middleware for user authentication and authorization
  */
 class Auth {
   private __user = (
@@ -41,14 +43,29 @@ class Auth {
         }
 
         // if yes, verify token
-        const { id } = (await jwt.verifyAccessToken(token)) ?? {};
+        const { userId, type, iat } =
+          (await jwt.verifyAccessToken(token)) ?? {};
 
-        if (!id) {
+        if (!userId || type !== JWTTOKENS.ACCESS) {
           throw ApiError.unauthorized('Invalid Access Token! Unauthorized!');
         }
 
+        // check if token is invalidated (logged out all devices)
+        const invalidationTimestamp = await redisService.get(
+          RedisService.createKey('INVALIDATED', userId),
+        );
+
+        if (
+          invalidationTimestamp &&
+          Number(iat) < Number(invalidationTimestamp)
+        ) {
+          throw ApiError.unauthorized(
+            'Access Token Invalidated! Unauthorized!',
+          );
+        }
+
         // find user in db using the decoded token
-        const user = await prisma.user.findUnique({ where: { id } });
+        const user = await prisma.user.findUnique({ where: { id: userId } });
 
         if (!user) {
           throw ApiError.unauthorized('User not found! Unauthorized!');

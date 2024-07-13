@@ -10,13 +10,11 @@ function bootstrap() {
   const app = new App().init();
 
   const server = app.listen(PORT, () => {
-    logger.info(`=> Express Server started successfully in ${NODE_ENV} mode.`);
+    logger.info(`Express Server started successfully in ${NODE_ENV} mode.`);
 
     if (isDev) {
-      logger.info(`=> API available at '${ct.base_url}'`);
-      logger.info(
-        "=> Swagger UI available at 'http://localhost:3000/api-docs'\n",
-      );
+      logger.info(`API available at '${ct.base_url}'`);
+      logger.info("Swagger UI available at 'http://localhost:3000/api-docs'");
     }
   });
 

@@ -1,8 +1,9 @@
 import { LoginSchema, RegisterSchema } from '#/common/schema/users.schema';
+import { auth } from '#/middlewares/auth.middleware';
+import { deviceIdMiddleware } from '#/middlewares/device.middleware';
 import { validation } from '#/middlewares/validation.middleware';
 import express from 'express';
 import { userController } from './users.controller';
-import { auth } from '#/middlewares/auth.middleware';
 
 const router = express.Router();
 
@@ -94,6 +95,7 @@ router.post(
   '/login',
   validation.requiredFields(['email', 'password']),
   validation.zod(LoginSchema),
+  deviceIdMiddleware,
   userController.login,
 );
 
@@ -178,6 +180,24 @@ router.post(
 
 /**
  * @openapi
+ * /users/refresh:
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Refresh user token
+ *     description: Refresh user token
+ *     responses:
+ *       200:
+ *         description: User token refreshed successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/refresh', deviceIdMiddleware, userController.refresh);
+
+/**
+ * @openapi
  * /users/logout:
  *   delete:
  *     tags:
@@ -192,6 +212,33 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.delete('/logout', auth.user(), userController.logout);
+router.delete(
+  '/logout',
+  auth.user(),
+  deviceIdMiddleware,
+  userController.logout,
+);
+
+/**
+ * @openapi
+ * /users/logout-all-devices:
+ *   delete:
+ *     tags:
+ *       - Users
+ *     summary: Logout user from all devices
+ *     description: Logout user from all devices
+ *     responses:
+ *       200:
+ *         description: User logged out from all devices successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.delete(
+  '/logout-all-devices',
+  auth.user(),
+  userController.logoutAllDevices,
+);
 
 export default router;

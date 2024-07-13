@@ -14,17 +14,17 @@ const prisma = new PrismaClient(
   isDev
     ? {
         log: [
-          {
-            emit: 'stdout',
-            level: 'query',
-          },
+          // {
+          //   emit: 'stdout',
+          //   level: 'query',
+          // },
+          // {
+          //   emit: 'stdout',
+          //   level: 'info',
+          // },
           {
             emit: 'stdout',
             level: 'error',
-          },
-          {
-            emit: 'stdout',
-            level: 'info',
           },
           {
             emit: 'stdout',
@@ -32,7 +32,15 @@ const prisma = new PrismaClient(
           },
         ],
       }
-    : undefined,
+    : {
+        // Log only errors in production
+        log: [
+          {
+            emit: 'stdout',
+            level: 'error',
+          },
+        ],
+      },
 ).$extends({
   query: {
     user: {
@@ -81,37 +89,58 @@ const prisma = new PrismaClient(
       },
     },
     // logs all queries
-    async $allOperations({ operation, model, args, query }) {
-      if (isDev) {
-        try {
-          const start = performance.now();
-          const result = await query(args);
-          const end = performance.now();
-          const time = end - start;
+    // async $allOperations({ operation, model, args, query }) {
+    //   if (isDev) {
+    //     try {
+    //       const start = performance.now();
+    //       const result = await query(args);
+    //       const end = performance.now();
+    //       const time = end - start;
 
-          // Query ${operation} on model ${model} took ${end - start} ms`);
-          logger.info(
-            chalk.green('=> Query :: ') +
-              chalk.yellow(`${model}.${operation}`) +
-              chalk.green(` took ${time}ms`) +
-              '\n' +
-              util.inspect(
-                { model, operation, args, time },
-                { showHidden: false, depth: null, colors: true },
-              ),
-          );
+    //       // Query ${operation} on model ${model} took ${end - start} ms`);
+    //       logger.info(
+    //         'Prisma Query :: ' +
+    //           chalk.yellow(`${model}.${operation}`) +
+    //           ' :: ' +
+    //           chalk.green(`${time}ms`) +
+    //           '\n',
+    //         // for debugging: more detailed info about query
+    //         // +
+    //         // util.inspect(
+    //         //   { model, operation, args, time },
+    //         //   { showHidden: false, depth: null, colors: true },
+    //         // ),
+    //       );
 
-          return result;
-        } catch (error) {
-          logger.error(
-            '!! Database error: ' + isDev ? chalk.red(error) : error,
-          );
+    //       return result;
+    //     } catch (error) {
+    //       logger.error(
+    //         'Database error: ' + isDev ? chalk.red(error) : error,
+    //       );
 
-          throw new Error(getErrorMessage(error)); // Re-throw the error for further handling
-        }
-      }
-    },
+    //       throw new Error(getErrorMessage(error)); // Re-throw the error for further handling
+    //     }
+    //   }
+    // },
   },
 });
+
+// Log database connection info
+async function testDatabaseConnection() {
+  try {
+    await prisma.$queryRaw`SELECT 1`; // Lightweight query to test the connection
+    logger.info('Connected to Prisma Database!\n');
+  } catch (error) {
+    logger.error('Failed to establish database connection: ', error);
+
+    // Close the connection
+    await prisma.$disconnect();
+
+    // Exit the process
+    process.exit(1);
+  }
+}
+
+testDatabaseConnection();
 
 export default prisma;

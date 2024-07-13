@@ -27,7 +27,7 @@ class HealthService {
     ) {
       return {
         status: StatusCode.SERVICE_UNAVAILABLE,
-        message: 'All checks failed!! Immediate action required!',
+        message: 'All checks failed! Immediate action required!',
         data: { results },
       };
     } else if (

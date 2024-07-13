@@ -12,7 +12,7 @@ const config = {
   RESEND_API_KEY: env.get('RESEND_API_KEY').required().asString(),
   EMAIL_FROM: env.get('EMAIL_FROM').required().asString(),
   ACCESS_TOKEN_SECRET: env.get('ACCESS_TOKEN_SECRET').required().asString(),
-  ACCESS_TOKEN_EXPIRY: env.get('ACCESS_TOKEN_EXPIRY').default('1h').asString(),
+  ACCESS_TOKEN_EXPIRY: env.get('ACCESS_TOKEN_EXPIRY').default('10m').asString(),
   REFRESH_TOKEN_SECRET: env.get('REFRESH_TOKEN_SECRET').required().asString(),
   REFRESH_TOKEN_EXPIRY: env
     .get('REFRESH_TOKEN_EXPIRY')

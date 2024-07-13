@@ -1,6 +1,5 @@
 import { CheckResult } from '#/common/entities/dtos/health.dto';
 import { StatusCode } from '#/common/entities/enums/error.enums';
-import redis from '#/common/redis.client';
 import { logger } from '#/common/winston.logger';
 import { ct } from '#/constants';
 import { asyncFnWrapper } from '#/utils/async-error-handling.util';
@@ -10,6 +9,7 @@ import axios from 'axios';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { redisService } from './redis.service';
 
 const execAsync = promisify(exec);
 
@@ -44,8 +44,8 @@ class CheckupService {
       await prisma.$connect();
       await prisma.$disconnect();
 
-      await redis.set('x', 'y');
-      await redis.del(['x']);
+      await redisService.set('x', 'y');
+      await redisService.del(['x']);
 
       return {
         success: true,

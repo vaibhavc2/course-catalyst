@@ -7,6 +7,7 @@ declare global {
     interface Request {
       user?: User;
       token?: string;
+      deviceId?: string;
       file?: MulterFile;
       files?: MulterFiles;
     }
@@ -14,10 +15,12 @@ declare global {
 }
 
 // Other global types
-interface StandardResponse<T> {
+interface StandardResponseDTO<T> {
   message: string;
   status?: number;
   data?: T | null;
 }
 
-export { StandardResponse };
+type RequestCookie = { [key: string]: string };
+
+export { StandardResponseDTO, RequestCookie };

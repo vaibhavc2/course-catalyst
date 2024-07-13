@@ -1,6 +1,17 @@
+import {
+  AccessTokenParams,
+  AccessTokenPayloadDTO,
+  ActivationTokenParams,
+  ActivationTokenPayloadDTO,
+  RefreshTokenParams,
+  RefreshTokenPayloadDTO,
+  VerificationPromise,
+} from '#/common/entities/dtos/jwt.dto';
+import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
 import { envConfig } from '#/config/env.config';
 import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
 import { getErrorMessage } from '#/utils/error-message.util';
+import { convertExpiry } from '#/utils/expiry-converter.util';
 import { sign, verify } from 'jsonwebtoken';
 
 const {
@@ -16,13 +27,6 @@ interface Token {
   secret: string;
   expiresIn: string;
 }
-
-type VerificationPromise<T> = Promise<T | null>;
-
-type ActivationTokenData = {
-  email: string;
-  otpCode: string | number;
-};
 
 class JWTService {
   private readonly accessToken: Token;
@@ -47,10 +51,17 @@ class JWTService {
   private generateToken = async (params: {
     secret: string;
     expiresIn: string;
-    data: any;
+    data: Record<string, any>;
   }) => {
     const { secret, expiresIn, data } = params;
-    const token = sign(data, secret, {
+
+    const dataWithTimestamps = {
+      ...data,
+      iat: Date.now(),
+      exp: convertExpiry(expiresIn, true) + Date.now(),
+    };
+
+    const token = sign(dataWithTimestamps, secret, {
       expiresIn: expiresIn,
     });
     return token;
@@ -81,27 +92,36 @@ class JWTService {
       return resolve(payload);
     };
 
-  generateAccessToken = async (userId: string | number) => {
+  generateAccessToken = async ({ userId }: AccessTokenParams) => {
     return await this.generateToken({
       secret: this.accessToken.secret,
       expiresIn: this.accessToken.expiresIn,
-      data: { id: userId },
+      data: {
+        userId,
+        type: JWTTOKENS.ACCESS,
+      },
     });
   };
 
-  generateRefreshToken = async (userId: string | number) => {
+  generateRefreshToken = async ({ userId }: RefreshTokenParams) => {
     return await this.generateToken({
       secret: this.refreshToken.secret,
       expiresIn: this.refreshToken.expiresIn,
-      data: { id: userId },
+      data: {
+        userId,
+        type: JWTTOKENS.REFRESH,
+      },
     });
   };
 
-  generateActivationToken = async ({ email, otpCode }: ActivationTokenData) => {
+  generateActivationToken = async ({
+    email,
+    otpCode,
+  }: ActivationTokenParams) => {
     return await this.generateToken({
       secret: this.activationToken.secret,
       expiresIn: this.activationToken.expiresIn,
-      data: { email, otpCode },
+      data: { email, otpCode, type: JWTTOKENS.ACTIVATION },
     });
   };
 
@@ -109,21 +129,21 @@ class JWTService {
     return (await this.verifyToken({
       token,
       secret: this.accessToken.secret,
-    })) as VerificationPromise<{ id: string }>;
+    })) as VerificationPromise<AccessTokenPayloadDTO>;
   };
 
   verifyActivationToken = async (token: string) => {
     return (await this.verifyToken({
       token,
       secret: this.activationToken.secret,
-    })) as VerificationPromise<ActivationTokenData>;
+    })) as VerificationPromise<ActivationTokenPayloadDTO>;
   };
 
   verifyRefreshToken = async (token: string) => {
     return (await this.verifyToken({
       token,
       secret: this.refreshToken.secret,
-    })) as VerificationPromise<{ id: string }>;
+    })) as VerificationPromise<RefreshTokenPayloadDTO>;
   };
 
   disableAccessToken = async (token: string) => {
