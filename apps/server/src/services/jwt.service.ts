@@ -19,6 +19,11 @@ interface Token {
 
 type VerificationPromise<T> = Promise<T | null>;
 
+type ActivationTokenData = {
+  email: string;
+  otpCode: string | number;
+};
+
 class JWTService {
   private readonly accessToken: Token;
   private readonly refreshToken: Token;
@@ -76,7 +81,7 @@ class JWTService {
       return resolve(payload);
     };
 
-  generateAccessToken = async (userId: number) => {
+  generateAccessToken = async (userId: string | number) => {
     return await this.generateToken({
       secret: this.accessToken.secret,
       expiresIn: this.accessToken.expiresIn,
@@ -84,7 +89,7 @@ class JWTService {
     });
   };
 
-  generateRefreshToken = async (userId: number) => {
+  generateRefreshToken = async (userId: string | number) => {
     return await this.generateToken({
       secret: this.refreshToken.secret,
       expiresIn: this.refreshToken.expiresIn,
@@ -92,13 +97,7 @@ class JWTService {
     });
   };
 
-  generateActivationToken = async ({
-    email,
-    otpCode,
-  }: {
-    email: string;
-    otpCode: string | number;
-  }) => {
+  generateActivationToken = async ({ email, otpCode }: ActivationTokenData) => {
     return await this.generateToken({
       secret: this.activationToken.secret,
       expiresIn: this.activationToken.expiresIn,
@@ -117,7 +116,7 @@ class JWTService {
     return (await this.verifyToken({
       token,
       secret: this.activationToken.secret,
-    })) as VerificationPromise<{ email: string }>;
+    })) as VerificationPromise<ActivationTokenData>;
   };
 
   verifyRefreshToken = async (token: string) => {

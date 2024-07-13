@@ -106,17 +106,43 @@ export function asyncFnWrapper<T extends any[], R>(
   };
 }
 
-// Utility to wrap all methods of a class with asyncFnWrapper
-export function wrapAsyncMethodsOfClass<T>(targetClass: T): T {
+interface IRequestHandler {
+  type?: 'normalAsync' | 'asyncErrorHandler';
+}
+
+// Utility to wrap all methods of a class with asyncFnWrapper or asyncErrorHandler
+export function wrapAsyncMethodsOfClass<T>(
+  targetClass: T,
+  { type }: IRequestHandler | undefined = { type: 'normalAsync' },
+): T {
   const handler = {
     get(target: any, propKey: string, receiver: any) {
       const origMethod = target[propKey];
       // Check if the property is a function and not a constructor
       if (typeof origMethod === 'function' && propKey !== 'constructor') {
+        // Explicitly annotate 'this' as 'any'
+        // Assuming asyncFnWrapper is a higher-order function that takes a function and returns a new function
         return function (this: any, ...args: any[]) {
-          // Explicitly annotate 'this' as 'any'
-          // Assuming asyncFnWrapper is a higher-order function that takes a function and returns a new function
-          return asyncFnWrapper(origMethod.bind(this))(...args);
+          // return asyncFnWrapper(origMethod.bind(this))(...args);
+          if (type === 'normalAsync') {
+            return asyncFnWrapper(origMethod.bind(this))(...args);
+          } else if (type === 'asyncErrorHandler') {
+            // Correctly wrap the original method to match the expected signature for asyncErrorHandler
+            // All methods of the class should have this signature: (req: Request, res: Response, next?: NextFunction) => Promise<any>
+            const wrappedMethod = async (
+              req: Request,
+              res: Response,
+              next: NextFunction,
+            ) => {
+              try {
+                return await origMethod.apply(this, args);
+              } catch (error) {
+                next(error);
+              }
+            };
+            // Now, pass the wrapped method to asyncErrorHandler without spreading args
+            return asyncErrorHandler(wrappedMethod);
+          }
         };
       }
       return Reflect.get(target, propKey, receiver);

@@ -1,4 +1,4 @@
-import { StatusCode } from '#/common/error.enums';
+import { StatusCode } from '#/common/entities/enums/error.enums';
 import { logger } from '#/common/winston.logger';
 import { envConfig } from '#/config/env.config';
 import { ApiError } from '#/utils/api-error.util';

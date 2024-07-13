@@ -4,9 +4,11 @@ import { version, description } from '../package.json';
 import { CorsOptions } from 'cors';
 // import chalk from 'chalk';
 
-const { isDev, HOST, PORT, COOKIE_EXPIRES_IN, CLIENT_URL } = envConfig;
+const { isDev, HOST, PORT, CLIENT_URL } = envConfig;
 
 const corsMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'];
+
+type SameSiteOptions = 'strict' | 'lax' | 'none';
 
 export const ct = {
   expressLimit: '50mb',
@@ -34,14 +36,11 @@ export const ct = {
     },
   },
   cookieOptions: {
-    auth: {
-      maxAge: 1000 * 60 * 60 * 24 * COOKIE_EXPIRES_IN, // 30 days by default
-      path: '/',
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict' as boolean | 'strict' | 'lax' | 'none' | undefined,
-      // sameSite: 'Strict' as 'Lax' | 'None' | 'Strict',
-    },
+    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    path: '/',
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax' as SameSiteOptions,
   },
   checkup: {
     http: {

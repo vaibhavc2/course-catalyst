@@ -8,7 +8,7 @@ export const RegisterSchema = z.object({
       .min(3, { message: zodErrors.minString('Name', 3) })
       .max(30, { message: zodErrors.largeString('Name', 30) })
       .regex(/^[a-zA-Z\s]*$/, {
-        message: 'Name can only contain: letters and spaces',
+        message: 'Name can only contain: letters and spaces.',
       }),
     email: z
       .string({ required_error: zodErrors.required('Email') })
@@ -21,5 +21,12 @@ export const RegisterSchema = z.object({
       .regex(/^(?=.*\d)(?=.*\W).*$/, {
         message: 'Password must contain at least a digit, and a symbol.',
       }),
+  }),
+});
+
+export const LoginSchema = z.object({
+  body: z.object({
+    email: RegisterSchema.shape.body.shape.email,
+    password: RegisterSchema.shape.body.shape.password,
   }),
 });

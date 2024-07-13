@@ -1,5 +1,5 @@
-import { CheckResult } from '#/common/dtos/health.dto';
-import { StatusCode } from '#/common/error.enums';
+import { CheckResult } from '#/common/entities/dtos/health.dto';
+import { StatusCode } from '#/common/entities/enums/error.enums';
 import redis from '#/common/redis.client';
 import { logger } from '#/common/winston.logger';
 import { ct } from '#/constants';

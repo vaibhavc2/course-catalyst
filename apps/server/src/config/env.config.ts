@@ -7,7 +7,6 @@ const config = {
   PORT: env.get('PORT').default('3000').asIntPositive(),
   HOST: env.get('HOST').default('localhost').asString(),
   NODE_ENV: env.get('NODE_ENV').default('development').asString(),
-  COOKIE_EXPIRES_IN: env.get('COOKIE_EXPIRES_IN').default(7).asIntPositive(), // 7 days by default
   CLIENT_URL: env.get('CLIENT_URL').asString(), //! change in production to frontend url only!
   REDIS_URL: env.get('REDIS_URL').default('redis://localhost:6379').asString(),
   RESEND_API_KEY: env.get('RESEND_API_KEY').required().asString(),

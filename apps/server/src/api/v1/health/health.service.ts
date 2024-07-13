@@ -1,5 +1,5 @@
-import { HealthServiceDTO } from '#/common/dtos/health.dto';
-import { StatusCode } from '#/common/error.enums';
+import { HealthServiceDTO } from '#/common/entities/dtos/health.dto';
+import { StatusCode } from '#/common/entities/enums/error.enums';
 import { ct } from '#/constants';
 import { checkup } from '#/services/checkup.service';
 import { ApiError } from '#/utils/api-error.util';
