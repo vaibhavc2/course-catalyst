@@ -1,7 +1,5 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
-export type UserDTO = Prisma.UserGetPayload<{ include: { avatar: true } }>;
-// export type UserDTO = User;
 export interface RegisterDTO {
   email: string;
   password: string;
@@ -28,7 +26,40 @@ export interface LogoutDTO {
   deviceId: string;
 }
 
+export interface LogoutAllDevicesDTO {
+  userId: string;
+}
+
 export interface RefreshDTO {
   deviceId: string;
   refreshToken: string;
 }
+
+export interface GetProfileDTO {
+  userId: string;
+}
+
+export interface UpdateUserInfoDTO {
+  userId: string;
+  name?: string;
+  email?: string;
+  prevEmail: string;
+  prevName: string;
+}
+
+export interface ChangePasswordDTO {
+  userId: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export type UserWithoutPassword = Omit<User, 'password'>;
+
+export type UserWithAvatarWithoutPassword = Omit<
+  Prisma.UserGetPayload<{
+    include: {
+      avatar: true;
+    };
+  }>,
+  'password'
+>;

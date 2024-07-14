@@ -1,4 +1,11 @@
-import { LoginSchema, RegisterSchema } from '#/common/schema/users.schema';
+import {
+  ChangePasswordSchema,
+  LoginSchema,
+  RegisterSchema,
+  SendVerificationEmailSchema,
+  UpdateUserInfoSchema,
+  VerifySchema,
+} from '#/common/schema/users.schema';
 import { auth } from '#/middlewares/auth.middleware';
 import { deviceIdMiddleware } from '#/middlewares/device.middleware';
 import { validation } from '#/middlewares/validation.middleware';
@@ -134,11 +141,7 @@ router.post(
  *          - email
  *          - otpCode
  */
-router.post(
-  '/verify',
-  validation.requiredFields(['email', 'otpCode']),
-  userController.verify,
-);
+router.post('/verify', validation.zod(VerifySchema), userController.verify);
 
 /**
  * @openapi
@@ -174,7 +177,7 @@ router.post(
  */
 router.post(
   '/send-verification-email',
-  validation.requiredFields(['email']),
+  validation.zod(SendVerificationEmailSchema),
   userController.sendVerificationEmail,
 );
 
@@ -195,6 +198,125 @@ router.post(
  *         description: Internal server error
  */
 router.post('/refresh', deviceIdMiddleware, userController.refresh);
+
+/**
+ * @openapi
+ * /users/profile:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user profile
+ *     description: Get user profile
+ *     responses:
+ *       200:
+ *         description: User profile fetched successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/profile', auth.user(), userController.getProfile);
+
+/**
+ * @openapi
+ * /users/user-info:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user info
+ *     description: Get user info
+ *     responses:
+ *       200:
+ *         description: User info fetched successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/user-info', auth.user(), userController.getUserInfo);
+
+/**
+ * @openapi
+ * /users/update-info:
+ *   patch:
+ *     tags:
+ *       - Users
+ *     summary: Update user info
+ *     description: Update user info
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserInfoDTO'
+ *     responses:
+ *       200:
+ *         description: User info updated successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ * components:
+ *   schemas:
+ *      UpdateUserInfoDTO:
+ *        type: object
+ *        properties:
+ *          name:
+ *            type: string
+ *          email:
+ *            type: string
+ *            format: email
+ */
+router.patch(
+  '/update-info',
+  validation.zod(UpdateUserInfoSchema),
+  auth.user(),
+  userController.updateUserInfo,
+);
+
+/**
+ * @openapi
+ * /users/change-password:
+ *   patch:
+ *     tags:
+ *       - Users
+ *     summary: Change user password
+ *     description: Change user password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChangePasswordDTO'
+ *     responses:
+ *       200:
+ *         description: User password changed successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ * components:
+ *   schemas:
+ *      ChangePasswordDTO:
+ *        type: object
+ *        properties:
+ *          currentPassword:
+ *            type: string
+ *            format: password
+ *          newPassword:
+ *            type: string
+ *            format: password
+ *        required:
+ *          - currentPassword
+ *          - newPassword
+ */
+router.patch(
+  '/change-password',
+  validation.requiredFields(['currentPassword', 'newPassword']),
+  validation.zod(ChangePasswordSchema),
+  auth.user(),
+  userController.changePassword,
+);
 
 /**
  * @openapi

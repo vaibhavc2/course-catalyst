@@ -3,10 +3,7 @@ import prisma from '#/common/prisma.client';
 import { jwt } from '#/services/jwt.service';
 import { RedisService, redisService } from '#/services/redis.service';
 import { ApiError } from '#/utils/api-error.util';
-import {
-  asyncErrorHandler,
-  wrapAsyncMethodsOfClass,
-} from '#/utils/async-error-handling.util';
+import { asyncErrorHandler } from '#/utils/async-error-handling.util';
 import { NextFunction, Request, Response } from 'express';
 
 type VerifySkipNext = { verified?: boolean; skipNext?: boolean } | undefined;

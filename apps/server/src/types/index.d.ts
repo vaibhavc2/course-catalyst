@@ -1,11 +1,11 @@
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
 declare global {
   namespace Express {
     type MulterFile = Express.Multer.File;
     type MulterFiles = { [fieldname: string]: Express.Multer.File[] };
     interface Request {
-      user?: User;
+      user?: Omit<User, 'password'>;
       token?: string;
       deviceId?: string;
       file?: MulterFile;
@@ -23,4 +23,4 @@ interface StandardResponseDTO<T> {
 
 type RequestCookie = { [key: string]: string };
 
-export { StandardResponseDTO, RequestCookie };
+export { RequestCookie, StandardResponseDTO };

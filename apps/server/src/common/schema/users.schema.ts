@@ -30,3 +30,32 @@ export const LoginSchema = z.object({
     password: RegisterSchema.shape.body.shape.password,
   }),
 });
+
+export const SendVerificationEmailSchema = z.object({
+  body: z.object({
+    email: RegisterSchema.shape.body.shape.email,
+  }),
+});
+
+export const VerifySchema = z.object({
+  body: z.object({
+    email: RegisterSchema.shape.body.shape.email,
+    otpCode: z
+      .string({ required_error: zodErrors.required('OTP Code') })
+      .length(6, { message: 'OTP Code must be 6 characters long.' }),
+  }),
+});
+
+export const UpdateUserInfoSchema = z.object({
+  body: z.object({
+    name: RegisterSchema.shape.body.shape.name.optional(),
+    email: RegisterSchema.shape.body.shape.email.optional(),
+  }),
+});
+
+export const ChangePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: RegisterSchema.shape.body.shape.password,
+    newPassword: RegisterSchema.shape.body.shape.password,
+  }),
+});

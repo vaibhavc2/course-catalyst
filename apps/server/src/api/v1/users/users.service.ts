@@ -1,16 +1,22 @@
 import {
+  ChangePasswordDTO,
+  GetProfileDTO,
   LoginDTO,
+  LogoutAllDevicesDTO,
   LogoutDTO,
   RefreshDTO,
   RegisterDTO,
   SendVerificationEmailDTO,
-  UserDTO,
+  UpdateUserInfoDTO,
+  UserWithAvatarWithoutPassword,
+  UserWithoutPassword,
   VerifyDTO,
 } from '#/common/entities/dtos/users.dto';
 import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
 import { REDIS_KEY_PREFIXES } from '#/common/entities/enums/redis-keys.enums';
 import prisma from '#/common/prisma.client';
 import { envConfig } from '#/config/env.config';
+import { cache } from '#/services/cache.service';
 import { emailService } from '#/services/email.service';
 import { jwt } from '#/services/jwt.service';
 import { otp } from '#/services/otp.service';
@@ -31,18 +37,33 @@ interface Tokens {
 }
 
 interface UserServiceDTO {
-  register: (data: RegisterDTO) => Promise<StandardResponseDTO<{ user: User }>>;
+  register: (
+    data: RegisterDTO,
+  ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
   login: (
     data: LoginDTO,
-  ) => Promise<StandardResponseDTO<{ user: UserDTO; tokens: Tokens }>>;
+  ) => Promise<
+    StandardResponseDTO<{ user: UserWithAvatarWithoutPassword; tokens: Tokens }>
+  >;
   sendVerificationEmail: (
     data: SendVerificationEmailDTO,
   ) => Promise<StandardResponseDTO<{ email: string }>>;
-  verify: (data: VerifyDTO) => Promise<StandardResponseDTO<{ user: User }>>;
-  logout: (data: LogoutDTO) => Promise<StandardResponseDTO<null>>;
+  verify: (
+    data: VerifyDTO,
+  ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
   refresh: (
     data: RefreshDTO,
   ) => Promise<StandardResponseDTO<{ tokens: Tokens }>>;
+  getProfile: (
+    data: GetProfileDTO,
+  ) => Promise<StandardResponseDTO<{ user: UserWithAvatarWithoutPassword }>>;
+  updateUserInfo: (
+    data: UpdateUserInfoDTO,
+  ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
+  logout: (data: LogoutDTO) => Promise<StandardResponseDTO<null>>;
+  logoutAllDevices: (
+    data: LogoutAllDevicesDTO,
+  ) => Promise<StandardResponseDTO<null>>;
 }
 
 class UserService implements UserServiceDTO {
@@ -98,17 +119,25 @@ class UserService implements UserServiceDTO {
       data: {
         name,
         email,
-        password,
+        password, // password is hashed by Prisma hook
       },
     });
 
     if (!user)
       throw ApiError.internal('Failed to create user. Please try again.');
 
+    // Omit password from response
+    const { password: _, ...userData } = user;
+
+    // // Set cache
+    // await cache.set(RedisService.createKey('USER', user.id), {
+    //   user: userData,
+    // });
+
     return {
       message:
         'Registration successful! Please check your email to activate your account.',
-      data: { user },
+      data: { user: userData },
     };
   }
 
@@ -150,9 +179,11 @@ class UserService implements UserServiceDTO {
       },
     );
 
+    const { password: _, ...userData } = user;
+
     return {
       message: 'User logged in successfully!',
-      data: { user, tokens: { accessToken, refreshToken } },
+      data: { user: userData, tokens: { accessToken, refreshToken } },
     };
   }
 
@@ -160,6 +191,10 @@ class UserService implements UserServiceDTO {
     const user = await prisma.user.findUnique({
       where: {
         email,
+      },
+      select: {
+        email: true,
+        isVerified: true,
       },
     });
 
@@ -217,19 +252,17 @@ class UserService implements UserServiceDTO {
     // Delete activation token from Redis
     await redisService.del(activationTokenKey);
 
+    // Omit password from response
+    const { password: _, ...userData } = user;
+
+    // // Update cache
+    // await cache.update(RedisService.createKey('USER', user.id), {
+    //   user: userData,
+    // });
+
     return {
       message: 'User verified successfully!',
-      data: { user },
-    };
-  }
-
-  async logout({ deviceId, userId }: LogoutDTO) {
-    // Delete refresh token from Redis
-    await redisService.del(RedisService.createKey('SESSION', userId, deviceId));
-
-    return {
-      message: 'Logged out successfully!',
-      data: null,
+      data: { user: userData },
     };
   }
 
@@ -279,7 +312,149 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async logoutAllDevices({ userId }: { userId: string }) {
+  async getProfile({ userId }: GetProfileDTO) {
+    // Cache key
+    const cacheKey = RedisService.createKey('USER_PROFILE', userId);
+
+    // Fetch from cache
+    const cachedUser = await cache.get<UserWithAvatarWithoutPassword>(cacheKey);
+
+    // Return cached data if exists
+    if (cachedUser) {
+      return {
+        message: 'User profile fetched successfully!',
+        data: { user: cachedUser },
+      };
+    } else {
+      // Fetch from DB
+      const _user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          avatar: true,
+        },
+      });
+
+      if (!_user) throw ApiError.notFound('User not found!');
+
+      // Omit password from response
+      const { password, ...user } = _user;
+
+      // Set cache
+      await cache.set(cacheKey, user);
+
+      return {
+        message: 'User profile fetched successfully!',
+        data: { user },
+      };
+    }
+  }
+
+  async updateUserInfo({
+    userId,
+    name,
+    email,
+    prevEmail,
+    prevName,
+  }: UpdateUserInfoDTO) {
+    if (!name && !email)
+      throw ApiError.badRequest('No data provided to update user info!');
+
+    if (email && email === prevEmail)
+      throw ApiError.badRequest('Email already update to date!');
+
+    if (name && name === prevName)
+      throw ApiError.badRequest('Name already up to date!');
+
+    // check if email already exists in db
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (existingUser)
+      throw ApiError.badRequest('User with this email already exists!');
+
+    // Update user info
+    const user = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        name,
+        email,
+      },
+    });
+
+    if (!user)
+      throw ApiError.internal('Failed to update user info. Please try again.');
+
+    // Omit password from response
+    const { password, ...userData } = user;
+
+    // // Update cache
+    // await cache.update(RedisService.createKey('USER', user.id), {
+    //   user: userData,
+    // });
+
+    return {
+      message: 'User info updated successfully!',
+      data: { user: userData },
+    };
+  }
+
+  async changePassword({
+    userId,
+    currentPassword,
+    newPassword,
+  }: ChangePasswordDTO) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: { password: true },
+    });
+
+    if (!user) throw ApiError.notFound('User not found!');
+
+    // Check if current password is correct
+    const isPasswordCorrect = await pwd.verify(user.password, currentPassword);
+
+    if (!isPasswordCorrect)
+      throw ApiError.badRequest('Invalid current password! Please try again.');
+
+    // Update user password
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: newPassword, // password is hashed by Prisma hook
+      },
+    });
+
+    if (!updatedUser)
+      throw ApiError.internal('Failed to update password. Please try again.');
+
+    return {
+      message: 'Password updated successfully!',
+      data: null,
+    };
+  }
+
+  async logout({ deviceId, userId }: LogoutDTO) {
+    // Delete refresh token from Redis
+    await redisService.del(RedisService.createKey('SESSION', userId, deviceId));
+
+    return {
+      message: 'Logged out successfully!',
+      data: null,
+    };
+  }
+
+  async logoutAllDevices({ userId }: LogoutAllDevicesDTO) {
     // Delete all sessions of user from Redis
     await redisService.del_keys(RedisService.createKey('SESSION', userId, '*'));
 

@@ -1,6 +1,9 @@
 import {
+  ChangePasswordDTO,
   LoginDTO,
   RegisterDTO,
+  SendVerificationEmailDTO,
+  UpdateUserInfoDTO,
   VerifyDTO,
 } from '#/common/entities/dtos/users.dto';
 import { envConfig } from '#/config/env.config';
@@ -10,6 +13,7 @@ import { autoWrapAsyncHandlers } from '#/utils/async-error-handling.util';
 import { getCookieOptions } from '#/utils/cookie-options.util';
 import { Request, Response } from 'express';
 import { userService } from './users.service';
+import { ApiError } from '#/utils/api-error.util';
 
 const { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } = envConfig;
 
@@ -53,7 +57,7 @@ export const userController = autoWrapAsyncHandlers({
   },
 
   sendVerificationEmail: async (req: Request, res: Response) => {
-    const { email } = req.body as { email: string };
+    const { email } = req.body as SendVerificationEmailDTO;
 
     const { message, data } =
       (await userService.sendVerificationEmail({
@@ -72,17 +76,6 @@ export const userController = autoWrapAsyncHandlers({
         otpCode,
       })) ?? {};
 
-    return new ApiResponse(res).success(message, data);
-  },
-
-  logout: async (req: Request, res: Response) => {
-    const { message, data } = await userService.logout({
-      userId: req.user?.id as string,
-      deviceId: req.deviceId as string,
-    });
-
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
     return new ApiResponse(res).success(message, data);
   },
 
@@ -108,6 +101,67 @@ export const userController = autoWrapAsyncHandlers({
       getCookieOptions(REFRESH_TOKEN_EXPIRY),
     );
     // Return response
+    return new ApiResponse(res).success(message, data);
+  },
+
+  getProfile: async (req: Request, res: Response) => {
+    const { message, data } =
+      (await userService.getProfile({
+        userId: req.user?.id as string,
+      })) ?? {};
+
+    return new ApiResponse(res).success(message, data);
+  },
+
+  getUserInfo: async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw ApiError.unauthorized('User not found! Please login again.');
+    }
+
+    const data = {
+      user: req.user,
+    };
+    const message = 'User info fetched successfully!';
+
+    return new ApiResponse(res).success(message, data);
+  },
+
+  updateUserInfo: async (req: Request, res: Response) => {
+    const { name, email } = req.body as UpdateUserInfoDTO;
+
+    const { message, data } =
+      (await userService.updateUserInfo({
+        userId: req.user?.id as string,
+        name: name as string,
+        email: email as string,
+        prevEmail: req.user?.email as string,
+        prevName: req.user?.name as string,
+      })) ?? {};
+
+    return new ApiResponse(res).success(message, data);
+  },
+
+  changePassword: async (req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body as ChangePasswordDTO;
+
+    const { message, data } =
+      (await userService.changePassword({
+        userId: req.user?.id as string,
+        currentPassword,
+        newPassword,
+      })) ?? {};
+
+    return new ApiResponse(res).success(message, data);
+  },
+
+  logout: async (req: Request, res: Response) => {
+    const { message, data } = await userService.logout({
+      userId: req.user?.id as string,
+      deviceId: req.deviceId as string,
+    });
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
     return new ApiResponse(res).success(message, data);
   },
 
