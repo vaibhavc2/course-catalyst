@@ -3,15 +3,15 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { envConfig } from './config/env.config';
-import { ct } from './constants';
-import { requestLogger } from './functions/request-logger';
-import { Docs } from './middlewares/docs.middleware';
-import { errorMiddleware } from './middlewares/error.middleware';
-import { globalApiRateLimiter } from './middlewares/rate-limiter.middleware';
-import { supplyAppVersionHeader } from './middlewares/version.middleware';
-import apiRouter from './router';
-import { swaggerSpec } from './common/docs/swagger.options';
+import { envConfig } from './common/config/env.config';
+import { ct } from './common/constants';
+import { requestLogger } from './common/utils/request-logger';
+import { Docs } from './common/middlewares/docs.middleware';
+import { errorMiddleware } from './common/middlewares/error.middleware';
+import { globalApiRateLimiter } from './common/middlewares/rate-limiter.middleware';
+import { supplyAppVersionHeader } from './common/middlewares/version.middleware';
+import apiRouter from './routes/global.routes';
+import { swaggerSpec } from './docs/swagger.options';
 
 const { isDev } = envConfig;
 

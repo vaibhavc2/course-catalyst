@@ -1,10 +1,10 @@
-import { envConfig } from '#/config/env.config';
-import { pwd } from '#/services/password.service';
-import { getErrorMessage } from '#/utils/error-message.util';
+import { envConfig } from '#/common/config/env.config';
+import { pwd } from '#/common/services/password.service';
+import { getErrorMessage } from '#/common/utils/error-message.util';
 import { PrismaClient } from '@prisma/client';
 import chalk from 'chalk';
 import util from 'util';
-import { logger } from './winston.logger';
+import { logger } from './utils/logger.util';
 
 const { isDev } = envConfig;
 

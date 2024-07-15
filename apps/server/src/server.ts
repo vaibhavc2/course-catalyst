@@ -1,8 +1,8 @@
 import { App } from './app';
-import { logger } from './common/winston.logger';
-import { envConfig } from './config/env.config';
-import { ct } from './constants';
-import { gracefulShutdown } from './functions/graceful-shutdown';
+import { logger } from './common/utils/logger.util';
+import { envConfig } from './common/config/env.config';
+import { ct } from './common/constants';
+import { gracefulShutdown } from './common/utils/graceful-shutdown';
 
 const { PORT, NODE_ENV, isDev, isProd } = envConfig;
 
