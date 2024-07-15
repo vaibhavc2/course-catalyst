@@ -1,91 +1,82 @@
-// import ct from '#/constants';
-// import { apiResponse, cloudinary } from '#/services';
-// import { asyncHandler } from '#/utils';
-// import { NextFunction, Request, Response } from 'express';
-// import multer from 'multer';
-// import path from 'path';
-// import { v4 as uuidv4 } from 'uuid';
+import { ct } from '#/constants';
+import { cloudinary } from '#/services/cloudinary.service';
+import { ApiError } from '#/utils/api-error.util';
+import { asyncErrorHandler } from '#/utils/async-error-handling.util';
+import { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-// export class FilesMiddleware {
-//   constructor() {}
+type ImageName = 'Avatar' | 'Image' | 'Course'; // Add more image names here later
 
-//   private multerUpload = multer({
-//     storage: multer.diskStorage({
-//       destination: function (req, file, cb) {
-//         cb(null, 'temp/uploads');
-//       },
-//       filename: function (req, file, cb) {
-//         cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
-//       },
-//     }),
-//   }).any();
+class FilesMiddleware {
+  private multerUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'temp/uploads');
+      },
+      filename: function (req, file, cb) {
+        cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
+      },
+    }),
+  }).any();
 
-//   private multerPromise = (req: Request, res: Response) => {
-//     return new Promise((resolve, reject) => {
-//       this.multerUpload(req, res, (err) => {
-//         if (!err) resolve(req);
-//         reject(err);
-//       });
-//     });
-//   };
+  private multerPromise = (req: Request, res: Response) => {
+    return new Promise((resolve, reject) => {
+      this.multerUpload(req, res, (err) => {
+        if (!err) resolve(req);
+        reject(err);
+      });
+    });
+  };
 
-//   public multer = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       await this.multerPromise(req, res);
-//       next();
-//     } catch (err) {
-//       next(err);
-//     }
-//   };
+  public multer = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await this.multerPromise(req, res);
+        next();
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
-//   public uploadImageToCloudinary = (imgName?: string) =>
-//     asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-//       // get image local path
-//       const imageLocalPath = req.file?.path;
+  public uploadImageToCloudinary = (imgName: ImageName = 'Image') =>
+    asyncErrorHandler(
+      async (req: Request, res: Response, next: NextFunction) => {
+        // get image local path
+        const imageLocalPath = req.file?.path;
 
-//       // check if image file is missing
-//       if (!imageLocalPath) {
-//         return res
-//           .status(400)
-//           .json(
-//             apiResponse.error(
-//               400,
-//               `${imgName ? imgName : 'Image'} file missing!`,
-//             ).body,
-//           );
-//       }
+        // check if image file is missing
+        if (!imageLocalPath) {
+          throw ApiError.badRequest(`Missing ${imgName} file!`);
+        }
 
-//       // check if image is a valid image file
-//       if (!ct.mimeTypes.image.includes(req.file?.mimetype as string)) {
-//         return res
-//           .status(400)
-//           .json(
-//             apiResponse.error(
-//               400,
-//               `Invalid ${imgName ? imgName : 'Image'} file!`,
-//             ).body,
-//           );
-//       }
+        // check if image is a valid image file
+        if (!ct.mimeTypes.image.includes(req.file?.mimetype as string)) {
+          throw ApiError.badRequest(`Invalid ${imgName} file type!`);
+        }
 
-//       // upload image to cloudinary
-//       const image = await cloudinary.upload(imageLocalPath);
+        // upload image to cloudinary
+        const image = await cloudinary.upload({
+          localFilePath: imageLocalPath,
+          folderName: 'avatars',
+        });
 
-//       // check if image upload failed
-//       if (!image?.secure_url) {
-//         return res
-//           .status(400)
-//           .json(
-//             apiResponse.error(
-//               400,
-//               `${imgName ? imgName : 'Image'} file upload failed!`,
-//             ).body,
-//           );
-//       }
+        // check if image upload failed
+        if (!image?.secure_url) {
+          throw ApiError.internal('Failed to upload image!');
+        }
 
-//       // save image url to request body
-//       req.body.imageUrl = image.secure_url;
+        const { secure_url, public_id } = image;
 
-//       // next middleware
-//       next();
-//     });
-// }
+        // save image url to request body
+        req.image = { url: secure_url, public_id };
+
+        // next middleware
+        next();
+      },
+    );
+}
+
+export const filesMiddleware = new FilesMiddleware();

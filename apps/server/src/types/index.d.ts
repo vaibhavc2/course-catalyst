@@ -10,6 +10,13 @@ declare global {
       deviceId?: string;
       file?: MulterFile;
       files?: MulterFiles;
+
+      image?: Prisma.AvatarGetPayload<{
+        select: { url: true; public_id: true };
+      }>;
+      // body: {
+      //   // Include other properties from req.body you want to type here
+      // } & Request['body']; // This ensures we extend the existing body type rather than overwrite it
     }
   }
 }

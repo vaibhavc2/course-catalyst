@@ -7,7 +7,7 @@ import {
   RefreshTokenPayloadDTO,
   VerificationPromise,
 } from '#/common/entities/dtos/jwt.dto';
-import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
+import { JWT_TOKENS } from '#/common/entities/enums/jwt.tokens';
 import { envConfig } from '#/config/env.config';
 import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
 import { getErrorMessage } from '#/utils/error-message.util';
@@ -98,7 +98,7 @@ class JWTService {
       expiresIn: this.accessToken.expiresIn,
       data: {
         userId,
-        type: JWTTOKENS.ACCESS,
+        type: JWT_TOKENS.ACCESS,
       },
     });
   };
@@ -109,7 +109,7 @@ class JWTService {
       expiresIn: this.refreshToken.expiresIn,
       data: {
         userId,
-        type: JWTTOKENS.REFRESH,
+        type: JWT_TOKENS.REFRESH,
       },
     });
   };
@@ -121,7 +121,7 @@ class JWTService {
     return await this.generateToken({
       secret: this.activationToken.secret,
       expiresIn: this.activationToken.expiresIn,
-      data: { email, otpCode, type: JWTTOKENS.ACTIVATION },
+      data: { email, otpCode, type: JWT_TOKENS.ACTIVATION },
     });
   };
 

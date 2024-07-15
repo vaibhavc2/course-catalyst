@@ -1,4 +1,4 @@
-import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
+import { JWT_TOKENS } from '#/common/entities/enums/jwt.tokens';
 import prisma from '#/common/prisma.client';
 import { jwt } from '#/services/jwt.service';
 import { RedisService, redisService } from '#/services/redis.service';
@@ -43,7 +43,7 @@ class Auth {
         const { userId, type, iat } =
           (await jwt.verifyAccessToken(token)) ?? {};
 
-        if (!userId || type !== JWTTOKENS.ACCESS) {
+        if (!userId || type !== JWT_TOKENS.ACCESS) {
           throw ApiError.unauthorized('Invalid Access Token! Unauthorized!');
         }
 

@@ -6,7 +6,7 @@ import { gracefulShutdown } from './functions/graceful-shutdown';
 
 const { PORT, NODE_ENV, isDev, isProd } = envConfig;
 
-function bootstrap() {
+function server() {
   const app = new App().init();
 
   const server = app.listen(PORT, () => {
@@ -24,4 +24,4 @@ function bootstrap() {
     process.on('SIGTERM', gracefulShutdown.bind(null, server));
   }
 }
-bootstrap();
+server();

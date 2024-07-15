@@ -26,6 +26,9 @@ const config = {
     .get('ACTIVATION_TOKEN_EXPIRY')
     .default('10m') // 10 minutes by default
     .asString(),
+  CLOUDINARY_CLOUD_NAME: env.get('CLOUDINARY_CLOUD_NAME').required().asString(),
+  CLOUDINARY_API_KEY: env.get('CLOUDINARY_API_KEY').required().asString(),
+  CLOUDINARY_API_SECRET: env.get('CLOUDINARY_API_SECRET').required().asString(),
 };
 
 const extraConfig = {

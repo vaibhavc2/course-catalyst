@@ -12,7 +12,7 @@ import {
   UserWithoutPassword,
   VerifyDTO,
 } from '#/common/entities/dtos/users.dto';
-import { JWTTOKENS } from '#/common/entities/enums/jwt.tokens';
+import { JWT_TOKENS } from '#/common/entities/enums/jwt.tokens';
 import { REDIS_KEY_PREFIXES } from '#/common/entities/enums/redis-keys.enums';
 import prisma from '#/common/prisma.client';
 import { envConfig } from '#/config/env.config';
@@ -229,7 +229,7 @@ class UserService implements UserServiceDTO {
       type,
     } = (await jwt.verifyActivationToken(activationToken)) ?? {};
 
-    if (!tokenEmail || !tokenOtpCode || type !== JWTTOKENS.ACTIVATION)
+    if (!tokenEmail || !tokenOtpCode || type !== JWT_TOKENS.ACTIVATION)
       throw ApiError.badRequest('Invalid activation token! Please try again.');
 
     // Check if email and OTP code match
@@ -270,7 +270,7 @@ class UserService implements UserServiceDTO {
     // Verify refresh token
     const { userId, type } = (await jwt.verifyRefreshToken(refreshToken)) ?? {};
 
-    if (!userId || type !== JWTTOKENS.REFRESH)
+    if (!userId || type !== JWT_TOKENS.REFRESH)
       throw ApiError.unauthorized('Invalid token! Please login.');
 
     // Check if session exists in Redis

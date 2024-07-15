@@ -55,4 +55,15 @@ export const ct = {
       criticalThreshold: 90, // 90% memory critical
     },
   },
+  mimeTypes: {
+    image: [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/tiff',
+      'image/bmp',
+      'image/svg+xml',
+    ],
+  },
 };

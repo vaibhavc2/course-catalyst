@@ -1,72 +1,60 @@
-// import env from '#/config';
-// import {
-//   deleteLocalFile,
-//   getErrorMessage,
-//   log,
-//   printErrorMessage,
-// } from '#/utils';
-// import { UploadApiResponse, v2 } from 'cloudinary';
+import { logger } from '#/common/winston.logger';
+import { envConfig } from '#/config/env.config';
+import { wrapAsyncMethodsOfClass } from '#/utils/async-error-handling.util';
+import { convertExpiry } from '#/utils/expiry-converter.util';
+import { v2 } from 'cloudinary';
 
-// class CloudinaryService {
-//   response: UploadApiResponse | null;
+const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
+  envConfig;
 
-//   constructor(cloud_name: string, api_key: string, api_secret: string) {
-//     this.response = null;
+interface UploadParams {
+  localFilePath: string;
+  folderName: string;
+  width?: number;
+  fileType?: 'auto' | 'image' | 'video' | 'raw' | undefined;
+  timeout?: string;
+}
 
-//     // configure cloudinary
-//     v2.config({ cloud_name, api_key, api_secret });
-//   }
+class CloudinaryService {
+  constructor(cloud_name: string, api_key: string, api_secret: string) {
+    // configure cloudinary
+    v2.config({ cloud_name, api_key, api_secret });
+  }
 
-//   upload = async (localFilePath: string) => {
-//     try {
-//       // check if file path is missing
-//       if (!localFilePath || localFilePath.length < 1) {
-//         printErrorMessage('💀No File Path Found!!', 'cloudinary: upload()');
-//         return null;
-//       }
+  upload = async ({
+    folderName,
+    localFilePath,
+    width,
+    fileType,
+    timeout,
+  }: UploadParams) => {
+    // check if file exists on the local server
+    const response = await v2.uploader.upload(localFilePath, {
+      resource_type: fileType || 'auto',
+      folder: folderName,
+      width, //! resize image to width (use only for images)
+      timeout: convertExpiry(timeout || '3m', true),
+    });
 
-//       // check if file exists on the local server
-//       const response = await v2.uploader.upload(localFilePath, {
-//         resource_type: 'auto',
-//         // timeout: 600000,
-//       });
+    logger.info(`=> File is uploaded: ${response.url}`);
 
-//       log.info(`✅   File is uploaded on Cloudinary: ${response.url}`);
+    return response;
+  };
 
-//       this.response = response;
-//     } catch (error) {
-//       printErrorMessage(`💀${getErrorMessage(error)}`, 'cloudinary: upload()');
-//     } finally {
-//       await deleteLocalFile(localFilePath);
+  delete = async (fileURL: string) => {
+    // delete file from cloudinary
+    const response = await v2.uploader.destroy(fileURL);
 
-//       return this.response;
-//     }
-//   };
+    logger.info(`=> File is deleted from Cloudinary: ${response}`);
 
-//   delete = async (fileURL: string) => {
-//     try {
-//       // check if file URL is missing
-//       if (!fileURL || fileURL.length < 1) {
-//         printErrorMessage('💀No File URL Found!!', 'cloudinary: delete()');
-//         return null;
-//       }
+    return response;
+  };
+}
 
-//       // delete file from cloudinary
-//       const response = await v2.uploader.destroy(fileURL);
-
-//       log.info(`✅   File is deleted from Cloudinary: ${response}`);
-
-//       this.response = response;
-//     } catch (error) {
-//       printErrorMessage(`💀${getErrorMessage(error)}`, 'cloudinary: delete()');
-//     } finally {
-//       return this.response;
-//     }
-//   };
-// }
-
-// export const cloudinary = new CloudinaryService(
-//   env.CLOUDINARY_CLOUD_NAME,
-//   env.CLOUDINARY_API_KEY,
-//   env.CLOUDINARY_API_SECRET,
-// );
+export const cloudinary = wrapAsyncMethodsOfClass(
+  new CloudinaryService(
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+  ),
+);
