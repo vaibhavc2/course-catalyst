@@ -14,5 +14,6 @@ class RoutePrefix {
   }
 }
 
-export const routePrefix = (prefix: string, router: Router) =>
+const routePrefix = (prefix: string, router: Router) =>
   new RoutePrefix(prefix, router);
+export default routePrefix;

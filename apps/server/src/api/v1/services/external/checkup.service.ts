@@ -1,9 +1,9 @@
-import { CheckResult } from '#/api/v1/entities/dtos/health.dto';
+import { HealthDTO } from '#/api/v1/entities/dtos/health.dto';
 import { StatusCode } from '#/api/v1/entities/enums/error.enums';
-import { logger } from '#/common/utils/logger.util';
 import { ct } from '#/common/constants';
-import { asyncFnWrapper } from '#/common/utils/async-error-handling.util';
-import { getErrorMessage } from '#/common/utils/error-message.util';
+import { asyncFnWrapper } from '#/common/utils/async-errors.util';
+import { getErrorMessage } from '#/common/utils/error-extras.util';
+import { logger } from '#/common/utils/logger.util';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import chalk from 'chalk';
@@ -14,7 +14,7 @@ import { redisService } from '../../../../common/services/redis.service';
 const execAsync = promisify(exec);
 
 class CheckupService {
-  httpCheck = asyncFnWrapper(async (url: string): Promise<CheckResult> => {
+  async httpCheck(url: string): Promise<HealthDTO.CheckResult> {
     const startTime = Date.now();
     const response = await axios.get(url); // perform a http check using axios
     const endTime = Date.now();
@@ -25,8 +25,8 @@ class CheckupService {
         message: `HTTP check successful at url: ${url}`,
         info: {
           response: {
-            status: StatusCode.OK,
             time: `${endTime - startTime}ms`,
+            statusCode: StatusCode.OK,
           },
         },
       };
@@ -36,9 +36,9 @@ class CheckupService {
         message: 'HTTP check failed',
       };
     }
-  });
+  }
 
-  dbCheck = asyncFnWrapper(async (): Promise<CheckResult> => {
+  async dbCheck(): Promise<HealthDTO.CheckResult> {
     try {
       const prisma = new PrismaClient();
       await prisma.$connect();
@@ -63,9 +63,9 @@ class CheckupService {
         info: `One or both of Prisma and Redis failed! Errors: ${getErrorMessage(error)}`,
       };
     }
-  });
+  }
 
-  diskCheck = asyncFnWrapper(async (): Promise<CheckResult> => {
+  async diskCheck(): Promise<HealthDTO.CheckResult> {
     try {
       // Execute the 'df' command to check disk space usage
       // '-h' option is for human-readable format
@@ -117,9 +117,9 @@ class CheckupService {
         message: 'Disk check failed!',
       };
     }
-  });
+  }
 
-  memoryCheck = asyncFnWrapper(async (): Promise<CheckResult> => {
+  async memoryCheck(): Promise<HealthDTO.CheckResult> {
     try {
       // Execute the 'free' command to check memory usage
       // '-m' option is for megabytes
@@ -172,7 +172,8 @@ class CheckupService {
         message: 'Memory check failed!',
       };
     }
-  });
+  }
 }
 
-export const checkup = new CheckupService();
+const checkupService = new CheckupService();
+export default checkupService;

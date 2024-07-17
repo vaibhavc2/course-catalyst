@@ -1,30 +1,20 @@
 import {
-  ChangePasswordDTO,
-  GetProfileDTO,
-  LoginDTO,
-  LogoutAllDevicesDTO,
-  LogoutDTO,
-  RefreshDTO,
-  RegisterDTO,
-  SendVerificationEmailDTO,
-  UpdateUserInfoDTO,
+  UserDTO,
   UserWithAvatarWithoutPassword,
   UserWithoutPassword,
-  VerifyDTO,
-} from '#/api/v1/entities/dtos/users.dto';
+} from '#/api/v1/entities/dtos/user.dto';
 import { JWT_TOKENS } from '#/api/v1/entities/enums/jwt.tokens';
+import envConfig from '#/common/config/env.config';
 import prisma from '#/common/prisma.client';
-import { envConfig } from '#/common/config/env.config';
-import { cache } from '#/common/services/cache.service';
-import { jwt } from '#/common/services/jwt.service';
-import { otp } from '#/common/services/otp.service';
-import { pwd } from '#/common/services/password.service';
+import cacheService from '#/common/services/cache.service';
+import jwtService from '#/common/services/jwt.service';
+import otpService from '#/common/services/otp.service';
+import pwdService from '#/common/services/password.service';
 import { RedisService, redisService } from '#/common/services/redis.service';
+import ApiError from '#/common/utils/api-error.util';
+import { convertTimeStr } from '#/common/utils/time.util';
 import { StandardResponseDTO } from '#/types';
-import { ApiError } from '#/common/utils/api-error.util';
-import { wrapAsyncMethodsOfClass } from '#/common/utils/async-error-handling.util';
-import { convertTimeStr } from '#/common/utils/convert-time-str.util';
-import { emailService } from './external/email.service';
+import emailService from './external/email.service';
 
 const { ACTIVATION_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY, ACCESS_TOKEN_EXPIRY } =
   envConfig;
@@ -36,41 +26,41 @@ interface Tokens {
 
 interface UserServiceDTO {
   register: (
-    data: RegisterDTO,
+    data: UserDTO.Register,
   ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
   login: (
-    data: LoginDTO,
+    data: UserDTO.Login,
   ) => Promise<
     StandardResponseDTO<{ user: UserWithAvatarWithoutPassword; tokens: Tokens }>
   >;
   sendVerificationEmail: (
-    data: SendVerificationEmailDTO,
+    data: UserDTO.SendVerificationEmail,
   ) => Promise<StandardResponseDTO<{ email: string }>>;
   verify: (
-    data: VerifyDTO,
+    data: UserDTO.Verify,
   ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
   refresh: (
-    data: RefreshDTO,
+    data: UserDTO.Refresh,
   ) => Promise<StandardResponseDTO<{ tokens: Tokens }>>;
   getProfile: (
-    data: GetProfileDTO,
+    data: UserDTO.GetProfile,
   ) => Promise<StandardResponseDTO<{ user: UserWithAvatarWithoutPassword }>>;
   updateUserInfo: (
-    data: UpdateUserInfoDTO,
+    data: UserDTO.UpdateUserInfo,
   ) => Promise<StandardResponseDTO<{ user: UserWithoutPassword }>>;
-  logout: (data: LogoutDTO) => Promise<StandardResponseDTO<null>>;
+  logout: (data: UserDTO.Logout) => Promise<StandardResponseDTO<null>>;
   logoutAllDevices: (
-    data: LogoutAllDevicesDTO,
+    data: UserDTO.LogoutAllDevices,
   ) => Promise<StandardResponseDTO<null>>;
 }
 
 class UserService implements UserServiceDTO {
   private async generateActivationTokenAndSendEmail(email: string) {
     // Generate OTP code
-    const otpCode = otp.generateSecureOTP(6).string;
+    const otpCode = otpService.generateSecureOTP(6).string;
 
     // Generate activation token
-    const activationToken = await jwt.generateActivationToken({
+    const activationToken = await jwtService.generateActivationToken({
       email,
       otpCode,
     });
@@ -97,7 +87,7 @@ class UserService implements UserServiceDTO {
     return true;
   }
 
-  async register({ name, email, password }: RegisterDTO) {
+  async register({ name, email, password }: UserDTO.Register) {
     const existingUser = await prisma.user.findUnique({
       where: {
         email,
@@ -139,7 +129,7 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async login({ email, password, deviceId }: LoginDTO) {
+  async login({ email, password, deviceId }: UserDTO.Login) {
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -152,7 +142,7 @@ class UserService implements UserServiceDTO {
     if (!user) throw ApiError.badRequest('User not found! Please register.');
 
     // Check if password is correct
-    const isPasswordCorrect = await pwd.verify(user.password, password);
+    const isPasswordCorrect = await pwdService.verify(user.password, password);
 
     if (!isPasswordCorrect)
       throw ApiError.badRequest('Invalid password! Please try again.');
@@ -162,10 +152,14 @@ class UserService implements UserServiceDTO {
       throw ApiError.forbidden('Please verify your email first!');
 
     // Generate access token
-    const accessToken = await jwt.generateAccessToken({ userId: user.id });
+    const accessToken = await jwtService.generateAccessToken({
+      userId: user.id,
+    });
 
     // Generate refresh token
-    const refreshToken = await jwt.generateRefreshToken({ userId: user.id });
+    const refreshToken = await jwtService.generateRefreshToken({
+      userId: user.id,
+    });
 
     // Store refresh token in Redis with expiry (store session)
     await redisService.hmset_with_expiry(
@@ -185,7 +179,7 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async sendVerificationEmail({ email }: SendVerificationEmailDTO) {
+  async sendVerificationEmail({ email }: UserDTO.SendVerificationEmail) {
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -212,7 +206,7 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async verify({ email, otpCode }: VerifyDTO) {
+  async verify({ email, otpCode }: UserDTO.Verify) {
     // Get activation token from Redis
     const activationTokenKey = RedisService.createKey('ACTIVATION', email);
     const activationToken = await redisService.get(activationTokenKey);
@@ -225,7 +219,7 @@ class UserService implements UserServiceDTO {
       email: tokenEmail,
       otpCode: tokenOtpCode,
       type,
-    } = (await jwt.verifyActivationToken(activationToken)) ?? {};
+    } = (await jwtService.verifyActivationToken(activationToken)) ?? {};
 
     if (!tokenEmail || !tokenOtpCode || type !== JWT_TOKENS.ACTIVATION)
       throw ApiError.badRequest('Invalid activation token! Please try again.');
@@ -264,9 +258,10 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async refresh({ deviceId, refreshToken }: RefreshDTO) {
+  async refresh({ deviceId, refreshToken }: UserDTO.Refresh) {
     // Verify refresh token
-    const { userId, type } = (await jwt.verifyRefreshToken(refreshToken)) ?? {};
+    const { userId, type } =
+      (await jwtService.verifyRefreshToken(refreshToken)) ?? {};
 
     if (!userId || type !== JWT_TOKENS.REFRESH)
       throw ApiError.unauthorized('Invalid token! Please login.');
@@ -289,10 +284,10 @@ class UserService implements UserServiceDTO {
     await redisService.del(sessionKey);
 
     // Generate new access token
-    const accessToken = await jwt.generateAccessToken({ userId });
+    const accessToken = await jwtService.generateAccessToken({ userId });
 
     // Generate new refresh token
-    const newRefreshToken = await jwt.generateRefreshToken({ userId });
+    const newRefreshToken = await jwtService.generateRefreshToken({ userId });
 
     // Store new refresh token in Redis with expiry (store session)
     await redisService.hmset_with_expiry(
@@ -310,12 +305,13 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async getProfile({ userId }: GetProfileDTO) {
+  async getProfile({ userId }: UserDTO.GetProfile) {
     // Cache key
     const cacheKey = RedisService.createKey('USER_PROFILE', userId);
 
     // Fetch from cache
-    const cachedUser = await cache.get<UserWithAvatarWithoutPassword>(cacheKey);
+    const cachedUser =
+      await cacheService.get<UserWithAvatarWithoutPassword>(cacheKey);
 
     // Return cached data if exists
     if (cachedUser) {
@@ -340,7 +336,7 @@ class UserService implements UserServiceDTO {
       const { password, ...user } = _user;
 
       // Set cache
-      await cache.set(cacheKey, user);
+      await cacheService.set(cacheKey, user);
 
       return {
         message: 'User profile fetched successfully!',
@@ -355,7 +351,7 @@ class UserService implements UserServiceDTO {
     email,
     prevEmail,
     prevName,
-  }: UpdateUserInfoDTO) {
+  }: UserDTO.UpdateUserInfo) {
     if (!name && !email)
       throw ApiError.badRequest('No data provided to update user info!');
 
@@ -407,7 +403,7 @@ class UserService implements UserServiceDTO {
     userId,
     currentPassword,
     newPassword,
-  }: ChangePasswordDTO) {
+  }: UserDTO.ChangePassword) {
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -418,7 +414,10 @@ class UserService implements UserServiceDTO {
     if (!user) throw ApiError.notFound('User not found!');
 
     // Check if current password is correct
-    const isPasswordCorrect = await pwd.verify(user.password, currentPassword);
+    const isPasswordCorrect = await pwdService.verify(
+      user.password,
+      currentPassword,
+    );
 
     if (!isPasswordCorrect)
       throw ApiError.badRequest('Invalid current password! Please try again.');
@@ -442,7 +441,7 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async logout({ deviceId, userId }: LogoutDTO) {
+  async logout({ deviceId, userId }: UserDTO.Logout) {
     // Delete refresh token from Redis
     await redisService.del(RedisService.createKey('SESSION', userId, deviceId));
 
@@ -452,7 +451,7 @@ class UserService implements UserServiceDTO {
     };
   }
 
-  async logoutAllDevices({ userId }: LogoutAllDevicesDTO) {
+  async logoutAllDevices({ userId }: UserDTO.LogoutAllDevices) {
     // Delete all sessions of user from Redis
     await redisService.del_keys(RedisService.createKey('SESSION', userId, '*'));
 
@@ -470,4 +469,5 @@ class UserService implements UserServiceDTO {
   }
 }
 
-export const userService = wrapAsyncMethodsOfClass(new UserService());
+const userService = new UserService();
+export default userService;

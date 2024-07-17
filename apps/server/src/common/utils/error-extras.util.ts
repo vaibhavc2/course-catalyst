@@ -34,3 +34,12 @@ export function printErrorMessage(error: unknown, context = '') {
   const errorMessage = getErrorMessage(error);
   logger.error(`Error in ${context}: ${errorMessage}`);
 }
+
+// / ************************************************************ //
+
+// Error Emitter
+import { EventEmitter } from 'events';
+
+class ErrorEmitter extends EventEmitter {}
+
+export const errorEmitter = new ErrorEmitter();

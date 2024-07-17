@@ -1,7 +1,7 @@
 import { logger } from '#/common/utils/logger.util';
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 import { ct } from '#/common/constants';
-import { printErrorMessage } from '#/common/utils/error-message.util';
+import { printErrorMessage } from '#/common/utils/error-extras.util';
 import { renderVerifyEmail } from '@lms/transactional';
 import { Resend } from 'resend';
 
@@ -14,13 +14,13 @@ class EmailService {
     this.resend = new Resend(RESEND_API_KEY);
   }
 
-  private send = async (params: {
+  private async send(params: {
     email: string;
     title: string;
     subject: string;
     html: any;
     // react?: any;
-  }) => {
+  }) {
     const { email, title, subject, html } = params;
     try {
       const response = await this.resend.emails.send({
@@ -40,7 +40,7 @@ class EmailService {
     } catch (error) {
       printErrorMessage(error, 'sendEmail()');
     }
-  };
+  }
 
   async sendVerificationEmail({
     email,
@@ -64,4 +64,5 @@ class EmailService {
   }
 }
 
-export const emailService = new EmailService();
+const emailService = new EmailService();
+export default emailService;

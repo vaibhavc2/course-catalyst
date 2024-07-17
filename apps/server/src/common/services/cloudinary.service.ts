@@ -1,8 +1,8 @@
-import { logger } from '#/common/utils/logger.util';
-import { envConfig } from '#/common/config/env.config';
-import { wrapAsyncMethodsOfClass } from '#/common/utils/async-error-handling.util';
-import { convertTimeStr } from '#/common/utils/convert-time-str.util';
+import envConfig from '#/common/config/env.config';
+import { convertTimeStr } from '#/common/utils/time.util';
 import { v2 } from 'cloudinary';
+import fs from 'fs';
+import ApiError from '../utils/api-error.util';
 
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
   envConfig;
@@ -28,7 +28,7 @@ class CloudinaryService {
     fileType,
     timeout,
   }: UploadParams) => {
-    // check if file exists on the local server
+    // Upload file to cloudinary
     const response = await v2.uploader.upload(localFilePath, {
       resource_type: fileType || 'auto',
       folder: folderName,
@@ -36,25 +36,28 @@ class CloudinaryService {
       timeout: convertTimeStr(timeout || '3m', true),
     });
 
-    logger.info(`=> File is uploaded: ${response.url}`);
+    // Check if file is uploaded
+    if (!response.url || !response.public_id || !response.secure_url) {
+      throw ApiError.internal('Failed to upload file!');
+    }
+
+    // Delete file from local storage
+    fs.unlinkSync(localFilePath);
 
     return response;
   };
 
-  delete = async (fileURL: string) => {
-    // delete file from cloudinary
-    const response = await v2.uploader.destroy(fileURL);
-
-    logger.info(`=> File is deleted from Cloudinary: ${response}`);
+  delete = async (public_id: string) => {
+    // Delete file from cloudinary
+    const response = await v2.uploader.destroy(public_id);
 
     return response;
   };
 }
 
-export const cloudinary = wrapAsyncMethodsOfClass(
-  new CloudinaryService(
-    CLOUDINARY_CLOUD_NAME,
-    CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET,
-  ),
+const cloudinaryService = new CloudinaryService(
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
 );
+export default cloudinaryService;

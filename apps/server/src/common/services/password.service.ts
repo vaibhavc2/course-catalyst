@@ -1,5 +1,5 @@
-import { ApiError } from '#/common/utils/api-error.util';
-import { printErrorMessage } from '#/common/utils/error-message.util';
+import ApiError from '#/common/utils/api-error.util';
+import { printErrorMessage } from '#/common/utils/error-extras.util';
 import * as argon2 from 'argon2';
 
 class passwordService {
@@ -10,7 +10,7 @@ class passwordService {
     // secret key is not required for argon2, rather it decreases the security!
   }
 
-  public hash = async (password: string) => {
+  async hash(password: string) {
     return argon2
       .hash(password)
       .then((hash) => {
@@ -20,9 +20,9 @@ class passwordService {
         printErrorMessage(error, 'passwordService.hash');
         throw ApiError.internal('Error hashing password.');
       });
-  };
+  }
 
-  public verify = async (hash: string, password: string) => {
+  async verify(hash: string, password: string) {
     return argon2
       .verify(hash, password)
       .then((verified) => {
@@ -32,7 +32,8 @@ class passwordService {
         printErrorMessage(error, 'passwordService.verify');
         throw ApiError.internal('Error verifying password.');
       });
-  };
+  }
 }
 
-export const pwd = new passwordService();
+const pwdService = new passwordService();
+export default pwdService;

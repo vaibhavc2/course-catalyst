@@ -1,25 +1,21 @@
+import { UserDTO } from '#/api/v1/entities/dtos/user.dto';
+import envConfig from '#/common/config/env.config';
+import ApiError from '#/common/utils/api-error.util';
+import ApiResponse from '#/common/utils/api-response.util';
 import {
-  ChangePasswordDTO,
-  LoginDTO,
-  RegisterDTO,
-  SendVerificationEmailDTO,
-  UpdateUserInfoDTO,
-  VerifyDTO,
-} from '#/api/v1/entities/dtos/users.dto';
-import { envConfig } from '#/common/config/env.config';
-import { RequestCookie } from '#/types';
-import { ApiResponse } from '#/common/utils/api-response.util';
-import { autoWrapAsyncHandlers } from '#/common/utils/async-error-handling.util';
+  asyncErrorHandler,
+  wrapAsyncMethodsOfClass,
+} from '#/common/utils/async-errors.util';
 import { getCookieOptions } from '#/common/utils/cookie-options.util';
-import { Request, Response } from 'express';
-import { userService } from '../services/user.service';
-import { ApiError } from '#/common/utils/api-error.util';
+import { RequestCookie } from '#/types';
+import { NextFunction, Request, Response } from 'express';
+import userService from '../services/user.service';
 
 const { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } = envConfig;
 
-export const userController = autoWrapAsyncHandlers({
-  register: async (req: Request, res: Response) => {
-    const { name, email, password }: RegisterDTO = req.body;
+class UserController {
+  async register(req: Request, res: Response) {
+    const { name, email, password }: UserDTO.Register = req.body;
 
     const { message, data } =
       (await userService.register({
@@ -29,10 +25,10 @@ export const userController = autoWrapAsyncHandlers({
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  login: async (req: Request, res: Response) => {
-    const { email, password }: LoginDTO = req.body;
+  async login(req: Request, res: Response) {
+    const { email, password }: UserDTO.Login = req.body;
 
     const { message, data } =
       (await userService.login({
@@ -54,10 +50,10 @@ export const userController = autoWrapAsyncHandlers({
     );
     // Return response
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  sendVerificationEmail: async (req: Request, res: Response) => {
-    const { email } = req.body as SendVerificationEmailDTO;
+  async sendVerificationEmail(req: Request, res: Response) {
+    const { email } = req.body as UserDTO.SendVerificationEmail;
 
     const { message, data } =
       (await userService.sendVerificationEmail({
@@ -65,10 +61,10 @@ export const userController = autoWrapAsyncHandlers({
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  verify: async (req: Request, res: Response) => {
-    const { email, otpCode } = req.body as VerifyDTO;
+  async verify(req: Request, res: Response) {
+    const { email, otpCode } = req.body as UserDTO.Verify;
 
     const { message, data } =
       (await userService.verify({
@@ -77,9 +73,9 @@ export const userController = autoWrapAsyncHandlers({
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  refresh: async (req: Request, res: Response) => {
+  async refresh(req: Request, res: Response) {
     const { refreshToken } = req.cookies as RequestCookie;
     const deviceId = req.deviceId as string;
 
@@ -102,18 +98,18 @@ export const userController = autoWrapAsyncHandlers({
     );
     // Return response
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  getProfile: async (req: Request, res: Response) => {
+  async getProfile(req: Request, res: Response) {
     const { message, data } =
       (await userService.getProfile({
         userId: req.user?.id as string,
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  getUserInfo: async (req: Request, res: Response) => {
+  async getUserInfo(req: Request, res: Response) {
     if (!req.user) {
       throw ApiError.unauthorized('User not found! Please login again.');
     }
@@ -124,10 +120,10 @@ export const userController = autoWrapAsyncHandlers({
     const message = 'User info fetched successfully!';
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  updateUserInfo: async (req: Request, res: Response) => {
-    const { name, email } = req.body as UpdateUserInfoDTO;
+  async updateUserInfo(req: Request, res: Response) {
+    const { name, email } = req.body as UserDTO.UpdateUserInfo;
 
     const { message, data } =
       (await userService.updateUserInfo({
@@ -139,10 +135,10 @@ export const userController = autoWrapAsyncHandlers({
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  changePassword: async (req: Request, res: Response) => {
-    const { currentPassword, newPassword } = req.body as ChangePasswordDTO;
+  async changePassword(req: Request, res: Response) {
+    const { currentPassword, newPassword } = req.body as UserDTO.ChangePassword;
 
     const { message, data } =
       (await userService.changePassword({
@@ -152,9 +148,9 @@ export const userController = autoWrapAsyncHandlers({
       })) ?? {};
 
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  logout: async (req: Request, res: Response) => {
+  async logout(req: Request, res: Response) {
     const { message, data } = await userService.logout({
       userId: req.user?.id as string,
       deviceId: req.deviceId as string,
@@ -163,9 +159,9 @@ export const userController = autoWrapAsyncHandlers({
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     return new ApiResponse(res).success(message, data);
-  },
+  }
 
-  logoutAllDevices: async (req: Request, res: Response) => {
+  async logoutAllDevices(req: Request, res: Response) {
     const { message, data } = await userService.logoutAllDevices({
       userId: req.user?.id as string,
     });
@@ -173,5 +169,7 @@ export const userController = autoWrapAsyncHandlers({
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     return new ApiResponse(res).success(message, data);
-  },
-});
+  }
+}
+
+export const userController = wrapAsyncMethodsOfClass(new UserController());

@@ -6,9 +6,9 @@ import {
   UpdateUserInfoSchema,
   VerifySchema,
 } from '#/api/v1/schema/users.schema';
-import { auth } from '#/common/middlewares/auth.middleware';
-import { deviceIdMiddleware } from '#/common/middlewares/device.middleware';
-import { validation } from '#/common/middlewares/validation.middleware';
+import auth from '#/common/middlewares/auth.middleware';
+import deviceMiddleware from '#/common/middlewares/device.middleware';
+import validation from '#/common/middlewares/validation.middleware';
 import express from 'express';
 import { userController } from '../controllers/user.controller';
 
@@ -68,6 +68,13 @@ router.post(
  *       - Users
  *     summary: Login a user
  *     description: Login a user
+ *     parameters:
+ *       - in: header
+ *         name: Device-Id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Unique identifier for the device making the request
  *     requestBody:
  *       required: true
  *       content:
@@ -102,7 +109,7 @@ router.post(
   '/login',
   validation.requiredFields(['email', 'password']),
   validation.zod(LoginSchema),
-  deviceIdMiddleware,
+  deviceMiddleware.getDeviceId,
   userController.login,
 );
 
@@ -197,7 +204,7 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.post('/refresh', deviceIdMiddleware, userController.refresh);
+router.post('/refresh', deviceMiddleware.getDeviceId, userController.refresh);
 
 /**
  * @openapi
@@ -337,7 +344,7 @@ router.patch(
 router.delete(
   '/logout',
   auth.user(),
-  deviceIdMiddleware,
+  deviceMiddleware.getDeviceId,
   userController.logout,
 );
 

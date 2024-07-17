@@ -1,5 +1,5 @@
 import { ErrorMessage, StatusCode } from '#/api/v1/entities/enums/error.enums';
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 
 const { isDev } = envConfig;
 
@@ -15,7 +15,7 @@ const { isDev } = envConfig;
  * @example throw ApiError.custom(404, 'Resource not found');
  * @example throw ApiError.notImplemented();
  */
-export class ApiError extends Error {
+class ApiError extends Error {
   name: string;
   statusCode: number;
   data: null;
@@ -139,3 +139,5 @@ export class ApiError extends Error {
     );
   }
 }
+
+export default ApiError;

@@ -1,10 +1,7 @@
 import { REDIS_KEY_PREFIXES } from '#/api/v1/entities/enums/redis-keys.enums';
+import envConfig from '#/common/config/env.config';
+import { asyncFnWrapper } from '#/common/utils/async-errors.util';
 import { logger } from '#/common/utils/logger.util';
-import { envConfig } from '#/common/config/env.config';
-import {
-  asyncFnWrapper,
-  wrapAsyncMethodsOfClass,
-} from '#/common/utils/async-error-handling.util';
 import { sanitizeParams } from '#/common/utils/sanitize.util';
 import { Redis } from 'ioredis';
 
@@ -61,7 +58,7 @@ export class RedisService {
     return `${prefix}::${sanitizedParams.join('::')}`;
   }
 
-  public async get(key: string): Promise<string | null> {
+  async get(key: string): Promise<string | null> {
     return await this.redis.get(key, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -69,7 +66,7 @@ export class RedisService {
     });
   }
 
-  public async set(key: string, value: string): Promise<string> {
+  async set(key: string, value: string): Promise<string> {
     return await this.redis.set(key, value, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -77,7 +74,7 @@ export class RedisService {
     });
   }
 
-  public async del(
+  async del(
     keys: string[] | string,
     ...otherKeys: (string | null)[]
   ): Promise<number> {
@@ -94,7 +91,7 @@ export class RedisService {
     });
   }
 
-  public async expire(key: string, seconds: number): Promise<number> {
+  async expire(key: string, seconds: number): Promise<number> {
     return await this.redis.expire(key, seconds, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -102,11 +99,7 @@ export class RedisService {
     });
   }
 
-  public async setex(
-    key: string,
-    seconds: number,
-    value: string,
-  ): Promise<string> {
+  async setex(key: string, seconds: number, value: string): Promise<string> {
     return await this.redis.setex(key, seconds, value, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -114,7 +107,7 @@ export class RedisService {
     });
   }
 
-  public async setnx(key: string, value: string): Promise<number> {
+  async setnx(key: string, value: string): Promise<number> {
     return await this.redis.setnx(key, value, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -122,10 +115,7 @@ export class RedisService {
     });
   }
 
-  public async hmset(
-    key: string,
-    values: Record<string, string>,
-  ): Promise<'OK'> {
+  async hmset(key: string, values: Record<string, string>): Promise<'OK'> {
     return await this.redis.hmset(key, values, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -133,7 +123,7 @@ export class RedisService {
     });
   }
 
-  public async hmset_with_expiry(
+  async hmset_with_expiry(
     key: string,
     seconds: number,
     values: Record<string, string>,
@@ -155,7 +145,7 @@ export class RedisService {
     );
   }
 
-  public async hmget(key: string): Promise<(string | null)[]> {
+  async hmget(key: string): Promise<(string | null)[]> {
     return await this.redis.hmget(key, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -163,7 +153,7 @@ export class RedisService {
     });
   }
 
-  public async hgetall(key: string): Promise<Record<string, string>> {
+  async hgetall(key: string): Promise<Record<string, string>> {
     return await this.redis.hgetall(key, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -171,7 +161,7 @@ export class RedisService {
     });
   }
 
-  public async hget(key: string, field: string): Promise<string | null> {
+  async hget(key: string, field: string): Promise<string | null> {
     return await this.redis.hget(key, field, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -179,11 +169,7 @@ export class RedisService {
     });
   }
 
-  public async hset(
-    key: string,
-    field: string,
-    value: string,
-  ): Promise<number> {
+  async hset(key: string, field: string, value: string): Promise<number> {
     return await this.redis.hset(key, field, value, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -191,7 +177,7 @@ export class RedisService {
     });
   }
 
-  public async hdel(key: string, field: string): Promise<number> {
+  async hdel(key: string, field: string): Promise<number> {
     return await this.redis.hdel(key, field, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -199,7 +185,7 @@ export class RedisService {
     });
   }
 
-  public async keys(pattern: string): Promise<string[]> {
+  async keys(pattern: string): Promise<string[]> {
     return await this.redis.keys(pattern, (err, res) => {
       if (err) {
         throw new Error(err.message);
@@ -207,11 +193,11 @@ export class RedisService {
     });
   }
 
-  public async del_keys(pattern: string): Promise<number> {
+  async del_keys(pattern: string): Promise<number> {
     const keys = await this.keys(pattern);
     return await this.del(keys);
   }
 }
 
-export const redisService = wrapAsyncMethodsOfClass(new RedisService());
+export const redisService = new RedisService();
 export const redis = redisService.getRedisClient();

@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "build:start": "pnpm build && pnpm start",
     "test:types": "tsc --noEmit",
-    "dev": "concurrently --kill-others \"tsx watch --clear-screen=false src/server.ts\" \"tsc -w --noEmit --preserveWatchOutput\"",
+    "dev": "concurrently --kill-others \"tsc -w --noEmit --preserveWatchOutput\" \"tsx watch --clear-screen=false src/server.ts\"",
     "test": "pnpm lint && pnpm test:types",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "tsc": "tsc",

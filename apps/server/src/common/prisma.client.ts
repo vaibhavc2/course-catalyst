@@ -1,9 +1,6 @@
-import { envConfig } from '#/common/config/env.config';
-import { pwd } from '#/common/services/password.service';
-import { getErrorMessage } from '#/common/utils/error-message.util';
+import envConfig from '#/common/config/env.config';
+import pwdService from '#/common/services/password.service';
 import { PrismaClient } from '@prisma/client';
-import chalk from 'chalk';
-import util from 'util';
 import { logger } from './utils/logger.util';
 
 const { isDev } = envConfig;
@@ -53,34 +50,44 @@ const prisma = new PrismaClient(
         if (operation === 'create' && args.data) {
           // For create operations, args.data exists
           if (args.data.password) {
-            args.data.password = await pwd.hash(String(args.data.password));
+            args.data.password = await pwdService.hash(
+              String(args.data.password),
+            );
           }
         } else if (operation === 'update' && args.data) {
           // For update operations, args.data exists
           if (args.data.password) {
-            args.data.password = await pwd.hash(String(args.data.password));
+            args.data.password = await pwdService.hash(
+              String(args.data.password),
+            );
           }
         } else if (operation === 'upsert' && args.create && args.update) {
           // For upsert operations, args.create and args.update exist
           if (args.create.password) {
-            args.create.password = await pwd.hash(String(args.create.password));
+            args.create.password = await pwdService.hash(
+              String(args.create.password),
+            );
           }
           if (args.update.password) {
-            args.update.password = await pwd.hash(String(args.update.password));
+            args.update.password = await pwdService.hash(
+              String(args.update.password),
+            );
           }
         } else if (operation === 'createMany' && args.data) {
           // For createMany operations, args.data exists
           if (Array.isArray(args.data)) {
             args.data.forEach(async (user) => {
               if (user.password) {
-                user.password = await pwd.hash(String(user.password));
+                user.password = await pwdService.hash(String(user.password));
               }
             }); // hash the password for each user
           }
         } else if (operation === 'updateMany' && args.data) {
           // For updateMany operations, args.data exists
           if (args.data.password) {
-            args.data.password = await pwd.hash(String(args.data.password));
+            args.data.password = await pwdService.hash(
+              String(args.data.password),
+            );
           }
         }
 

@@ -1,4 +1,4 @@
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 import { Request, Response } from 'express';
 import { version, description } from '../../package.json';
 import { CorsOptions } from 'cors';

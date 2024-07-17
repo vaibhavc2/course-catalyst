@@ -78,4 +78,5 @@
 //   }
 // }
 
-// export const google = new GoogleOAuthService();
+// const googleService = new GoogleOAuthService();
+// export default googleService;

@@ -40,4 +40,5 @@ class OTPService {
   }
 }
 
-export const otp = new OTPService();
+const otpService = new OTPService();
+export default otpService;

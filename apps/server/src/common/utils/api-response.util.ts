@@ -14,7 +14,7 @@ class ApiResponseService {
   }
 }
 
-export class ApiResponse {
+class ApiResponse {
   private readonly res: Response;
   constructor(response: Response) {
     this.res = response;
@@ -62,3 +62,5 @@ export class ApiResponse {
     return this.send(500, message, data);
   }
 }
+
+export default ApiResponse;

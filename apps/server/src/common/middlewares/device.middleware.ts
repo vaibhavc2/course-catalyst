@@ -1,9 +1,13 @@
-import { ApiError } from '#/common/utils/api-error.util';
-import { asyncErrorHandler } from '#/common/utils/async-error-handling.util';
+import ApiError from '#/common/utils/api-error.util';
+import { asyncErrorHandler } from '#/common/utils/async-errors.util';
 import { NextFunction, Request, Response } from 'express';
 
-export const deviceIdMiddleware = asyncErrorHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+class DeviceMiddleware {
+  getDeviceId = asyncErrorHandler(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const deviceId =
       req.cookies?.deviceId ||
       req.header('Device-Id') ||
@@ -17,5 +21,8 @@ export const deviceIdMiddleware = asyncErrorHandler(
     req.deviceId = deviceId;
 
     next();
-  },
-);
+  });
+}
+
+const deviceMiddleware = new DeviceMiddleware();
+export default deviceMiddleware;

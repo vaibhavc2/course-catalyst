@@ -1,27 +1,57 @@
 import { App } from './app';
 import { logger } from './common/utils/logger.util';
-import { envConfig } from './common/config/env.config';
+import envConfig from './common/config/env.config';
 import { ct } from './common/constants';
-import { gracefulShutdown } from './common/utils/graceful-shutdown';
+import { IncomingMessage, Server, ServerResponse } from 'http';
+import { Application } from 'express';
 
 const { PORT, NODE_ENV, isDev, isProd } = envConfig;
 
-function server() {
-  const app = new App().init();
+type ExpressServer = Server<typeof IncomingMessage, typeof ServerResponse>;
 
-  const server = app.listen(PORT, () => {
-    logger.info(`Express Server started successfully in ${NODE_ENV} mode.`);
+class HTTPServer {
+  private readonly app: Application;
+  private server: ExpressServer;
 
-    if (isDev) {
-      logger.info(`API available at '${ct.base_url}'`);
-      logger.info("Swagger UI available at 'http://localhost:3000/api-docs'");
+  // bootstrap the express application and server
+  constructor(appInstance: App) {
+    this.app = appInstance.init();
+
+    this.server = this.app.listen(PORT, () => {
+      logger.info(`Express Server started successfully in ${NODE_ENV} mode.`);
+
+      if (isDev) {
+        logger.info(`API available at '${ct.base_url}'`);
+        logger.info("Swagger UI available at 'http://localhost:3000/api-docs'");
+      }
+    });
+
+    // Graceful shutdown in case of SIGINT (Ctrl+C) or SIGTERM (Docker)
+    if (isProd) {
+      process.on('SIGINT', this.gracefulShutdown.bind(null, 5000));
+      process.on('SIGTERM', this.gracefulShutdown.bind(null, 5000));
     }
-  });
+  }
 
-  // Graceful shutdown in case of SIGINT (Ctrl+C) or SIGTERM (Docker)
-  if (isProd) {
-    process.on('SIGINT', gracefulShutdown.bind(null, server));
-    process.on('SIGTERM', gracefulShutdown.bind(null, server));
+  gracefulShutdown(
+    waitTime: number = 5000, // Default wait time of 5 seconds
+  ) {
+    console.debug('\n=> Signal received: closing HTTP server...');
+
+    // Stop accepting new connections
+    this.server.close(() => {
+      console.debug('HTTP server closed gracefully.');
+    });
+
+    // Wait for ongoing requests to finish with a timeout
+    setTimeout(() => {
+      console.debug(
+        `Waiting for ${waitTime / 1000} seconds for ongoing requests to complete...`,
+      );
+      // Optionally, forcefully terminate remaining connections here
+    }, waitTime);
   }
 }
-server();
+
+const appInstance = new App();
+new HTTPServer(appInstance);

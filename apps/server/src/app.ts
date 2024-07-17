@@ -3,15 +3,15 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { envConfig } from './common/config/env.config';
+import envConfig from './common/config/env.config';
 import { ct } from './common/constants';
-import { requestLogger } from './common/utils/request-logger';
-import { Docs } from './common/middlewares/docs.middleware';
-import { errorMiddleware } from './common/middlewares/error.middleware';
+import Docs from './common/middlewares/docs.middleware';
+import errorMiddleware from './common/middlewares/error.middleware';
 import { globalApiRateLimiter } from './common/middlewares/rate-limiter.middleware';
-import { supplyAppVersionHeader } from './common/middlewares/version.middleware';
+import versionMiddleware from './common/middlewares/version.middleware';
+import requestLogger from './common/middlewares/request-logger.middleware';
 import apiRouter from './routes/global.routes';
-import { swaggerSpec } from './docs/swagger.options';
+import { errorEmitter } from './common/utils/error-extras.util';
 
 const { isDev } = envConfig;
 
@@ -26,6 +26,9 @@ export class App {
   public init() {
     // initializing express app
     this.config();
+
+    // error handling
+    this.errorHandling();
 
     // returning express app
     return this.app;
@@ -52,7 +55,7 @@ export class App {
     );
 
     // setting app version header
-    this.app.use(supplyAppVersionHeader);
+    this.app.use(versionMiddleware.supplyAppVersionHeader);
 
     // rate limiter: api rate limiter (throttling)
     this.app.use(globalApiRateLimiter); // global rate limiter
@@ -67,9 +70,17 @@ export class App {
     const { swaggerUi, swaggerUiSetup, secureDocs, serveDocs } = Docs;
     this.app.use('/api-docs', secureDocs, swaggerUi, swaggerUiSetup); // serve Swagger UI, only in non-production environments (secureDocs middleware)
     serveDocs(this.app);
+  }
+
+  private errorHandling() {
+    const { routeNotFound, logger, handler } = errorMiddleware;
+
+    // catch errors emitted by the errorEmitter
+    errorEmitter.on('error', (error, req, res, next) => {
+      handler(error, req, res, next);
+    });
 
     // error handler middlewares //!!! should be the last middlewares
-    const { routeNotFound, logger, handler } = errorMiddleware;
     this.app.use(routeNotFound, logger, handler);
   }
 }

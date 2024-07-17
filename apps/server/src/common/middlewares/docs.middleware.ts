@@ -1,12 +1,12 @@
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 import { swaggerSpec } from '#/docs/swagger.options';
-import { ApiResponse } from '#/common/utils/api-response.util';
+import ApiResponse from '#/common/utils/api-response.util';
 import { Application, NextFunction, Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 const { isProd } = envConfig;
 
-export class Docs {
+class Docs {
   static swaggerUi = swaggerUi.serve;
 
   static swaggerUiSetup = swaggerUi.setup(swaggerSpec, {
@@ -38,3 +38,5 @@ export class Docs {
     });
   }
 }
+
+export default Docs;

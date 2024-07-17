@@ -1,5 +1,5 @@
 import { ct } from '#/common/constants';
-import { convertTimeStr } from './convert-time-str.util';
+import { convertTimeStr } from './time.util';
 
 export const getCookieOptions = (expiresIn: string) => {
   const expiry = convertTimeStr(expiresIn, true);

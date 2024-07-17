@@ -36,4 +36,5 @@ const extraConfig = {
   isProd: config.NODE_ENV === 'production',
 };
 
-export const envConfig = { ...config, ...extraConfig };
+const envConfig = { ...config, ...extraConfig };
+export default envConfig;

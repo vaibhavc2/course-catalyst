@@ -6,13 +6,13 @@ import {
   RefreshTokenParams,
   RefreshTokenPayloadDTO,
   VerificationPromise,
-} from '#/api/v1/entities/dtos/jwt.dto';
+} from '#/api/v1/entities/dtos/external/jwt.dto';
 import { JWT_TOKENS } from '#/api/v1/entities/enums/jwt.tokens';
-import { envConfig } from '#/common/config/env.config';
-import { wrapAsyncMethodsOfClass } from '#/common/utils/async-error-handling.util';
-import { getErrorMessage } from '#/common/utils/error-message.util';
-import { convertTimeStr } from '#/common/utils/convert-time-str.util';
-import { sign, verify } from 'jsonwebtoken';
+import envConfig from '#/common/config/env.config';
+import { getErrorMessage } from '#/common/utils/error-extras.util';
+import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
+import { logger } from '../utils/logger.util';
+import { convertTimeStr } from '../utils/time.util';
 
 const {
   ACCESS_TOKEN_SECRET,
@@ -52,19 +52,19 @@ class JWTService {
     secret: string;
     expiresIn: string;
     data: Record<string, any>;
-  }) => {
+  }): Promise<string> => {
     const { secret, expiresIn, data } = params;
+
+    const currentTimestamp = Math.floor(Date.now() / 1000); // in seconds
 
     const dataWithTimestamps = {
       ...data,
-      iat: Date.now(),
-      exp: convertTimeStr(expiresIn, true) + Date.now(),
+      iat: currentTimestamp, // issued at: current time in seconds
+      exp: currentTimestamp + convertTimeStr(expiresIn), // if included here, then expiresIn must not be given! Only one of them should be used.
     };
 
-    const token = sign(dataWithTimestamps, secret, {
-      expiresIn: expiresIn,
-    });
-    return token;
+    // return signed token
+    return sign(dataWithTimestamps, secret);
   };
 
   private disableToken = async (params: { token: string; secret: string }) => {
@@ -87,6 +87,11 @@ class JWTService {
     (resolve: (value: any) => void, reject: (reason?: any) => void) =>
     (err: unknown, payload: any) => {
       if (err) {
+        if (err instanceof TokenExpiredError) {
+          logger.error('Token expired: ' + payload);
+        } else {
+          logger.error('Token verification error: ' + err);
+        }
         reject(getErrorMessage(err) || 'Invalid Token or Token Expired!');
       }
       return resolve(payload);
@@ -154,4 +159,5 @@ class JWTService {
   };
 }
 
-export const jwt = wrapAsyncMethodsOfClass(new JWTService());
+const jwtService = new JWTService();
+export default jwtService;

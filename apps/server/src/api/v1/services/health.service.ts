@@ -1,15 +1,26 @@
-import { HealthServiceDTO } from '#/api/v1/entities/dtos/health.dto';
+import { HealthDTO } from '#/api/v1/entities/dtos/health.dto';
 import { StatusCode } from '#/api/v1/entities/enums/error.enums';
-import { checkup } from '#/api/v1/services/external/checkup.service';
+import checkupService from '#/api/v1/services/external/checkup.service';
 import { ct } from '#/common/constants';
-import { wrapAsyncMethodsOfClass } from '#/common/utils/async-error-handling.util';
+import { StandardResponseDTO } from '#/types';
 
-class HealthService {
+interface results {
+  google?: HealthDTO.CheckResult;
+  db?: HealthDTO.CheckResult;
+  disk?: HealthDTO.CheckResult;
+  memory?: HealthDTO.CheckResult;
+}
+
+interface HealthServiceDTO {
+  index: () => Promise<StandardResponseDTO<{ results: results }>>;
+}
+
+class HealthService implements HealthServiceDTO {
   async index() {
-    const google = await checkup.httpCheck(ct.checkup.http.url);
-    const db = await checkup.dbCheck();
-    const disk = await checkup.diskCheck();
-    const memory = await checkup.memoryCheck();
+    const google = await checkupService.httpCheck(ct.checkup.http.url);
+    const db = await checkupService.dbCheck();
+    const disk = await checkupService.diskCheck();
+    const memory = await checkupService.memoryCheck();
 
     const results = {
       google,
@@ -55,6 +66,5 @@ class HealthService {
   }
 }
 
-export const healthService: HealthServiceDTO = wrapAsyncMethodsOfClass(
-  new HealthService(),
-);
+const healthService = new HealthService();
+export default healthService;

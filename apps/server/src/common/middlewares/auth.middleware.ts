@@ -1,9 +1,9 @@
 import { JWT_TOKENS } from '#/api/v1/entities/enums/jwt.tokens';
 import prisma from '#/common/prisma.client';
-import { jwt } from '#/common/services/jwt.service';
+import jwtService from '#/common/services/jwt.service';
 import { RedisService, redisService } from '#/common/services/redis.service';
-import { ApiError } from '#/common/utils/api-error.util';
-import { asyncErrorHandler } from '#/common/utils/async-error-handling.util';
+import ApiError from '#/common/utils/api-error.util';
+import { asyncErrorHandler } from '#/common/utils/async-errors.util';
 import { NextFunction, Request, Response } from 'express';
 
 type VerifySkipNext = { verified?: boolean; skipNext?: boolean } | undefined;
@@ -41,7 +41,7 @@ class Auth {
 
         // if yes, verify token
         const { userId, type, iat } =
-          (await jwt.verifyAccessToken(token)) ?? {};
+          (await jwtService.verifyAccessToken(token)) ?? {};
 
         if (!userId || type !== JWT_TOKENS.ACCESS) {
           throw ApiError.unauthorized('Invalid Access Token! Unauthorized!');
@@ -73,8 +73,11 @@ class Auth {
           throw ApiError.unauthorized('Please verify your email first!');
         }
 
+        // Omit password from user object
+        const { password: _, ...userData } = user;
+
         // if user found, attach user to req object
-        req.user = user;
+        req.user = userData;
         req.token = token;
 
         if (skipNext) return;
@@ -123,4 +126,5 @@ class Auth {
   }
 }
 
-export const auth = new Auth();
+const auth = new Auth();
+export default auth;

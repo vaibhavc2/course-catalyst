@@ -1,7 +1,7 @@
-import { ApiError } from '#/common/utils/api-error.util';
-import { asyncErrorHandler } from '#/common/utils/async-error-handling.util';
-import { getErrorMessage } from '#/common/utils/error-message.util';
-import { zodErrors } from '#/common/utils/zod-errors.util';
+import ApiError from '#/common/utils/api-error.util';
+import { asyncErrorHandler } from '#/common/utils/async-errors.util';
+import { getErrorMessage } from '#/common/utils/error-extras.util';
+import zodErrors from '#/common/utils/zod-errors.util';
 import { NextFunction, Request, Response } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 
@@ -55,4 +55,5 @@ class ValidationMiddleware {
     );
 }
 
-export const validation = new ValidationMiddleware();
+const validation = new ValidationMiddleware();
+export default validation;

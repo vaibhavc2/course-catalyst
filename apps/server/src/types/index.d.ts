@@ -1,4 +1,5 @@
 import { Prisma, User } from '@prisma/client';
+import AvatarImage from '#/api/v1/entities/dtos/avatar.dto';
 
 declare global {
   namespace Express {
@@ -11,9 +12,7 @@ declare global {
       file?: MulterFile;
       files?: MulterFiles;
 
-      image?: Prisma.AvatarGetPayload<{
-        select: { url: true; public_id: true };
-      }>;
+      avatar?: AvatarImage;
       // body: {
       //   // Include other properties from req.body you want to type here
       // } & Request['body']; // This ensures we extend the existing body type rather than overwrite it

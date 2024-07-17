@@ -1,4 +1,4 @@
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 
 const { isDev } = envConfig;
 
@@ -36,4 +36,6 @@ class ZodError {
     return fieldName + ' must be at least ' + min + ' characters.';
   };
 }
-export const zodErrors = new ZodError();
+
+const zodErrors = new ZodError();
+export default zodErrors;

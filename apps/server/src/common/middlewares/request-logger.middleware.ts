@@ -22,7 +22,7 @@ type Tokens = morgan.TokenIndexer<
   express.Response<any, Record<string, any>>
 >;
 
-export const requestLogger = (tokens: Tokens, req: Request, res: Response) => {
+function requestLogger(tokens: Tokens, req: Request, res: Response) {
   return [
     // tokens.method(req, res),
     tokens['styled-method'](req, res), // highlight the method
@@ -36,4 +36,6 @@ export const requestLogger = (tokens: Tokens, req: Request, res: Response) => {
     chalk.magenta(tokens['response-time'](req, res)),
     'ms\n',
   ].join(' ');
-};
+}
+
+export default requestLogger;

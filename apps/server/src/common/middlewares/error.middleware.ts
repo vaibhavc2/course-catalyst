@@ -1,7 +1,7 @@
 import { StatusCode } from '#/api/v1/entities/enums/error.enums';
 import { logger } from '#/common/utils/logger.util';
-import { envConfig } from '#/common/config/env.config';
-import { ApiError } from '#/common/utils/api-error.util';
+import envConfig from '#/common/config/env.config';
+import ApiError from '#/common/utils/api-error.util';
 import chalk from 'chalk';
 import { NextFunction, Request, Response } from 'express';
 
@@ -15,7 +15,7 @@ interface UnknownError extends Error {
   code?: number;
 }
 
-export class ErrorMiddleware {
+class ErrorMiddleware {
   constructor() {}
 
   private sendErrorResponse(
@@ -150,4 +150,5 @@ export class ErrorMiddleware {
   };
 }
 
-export const errorMiddleware = new ErrorMiddleware();
+const errorMiddleware = new ErrorMiddleware();
+export default errorMiddleware;

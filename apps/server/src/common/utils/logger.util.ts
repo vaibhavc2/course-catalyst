@@ -1,4 +1,4 @@
-import { envConfig } from '#/common/config/env.config';
+import envConfig from '#/common/config/env.config';
 import { createLogger, format, transports } from 'winston';
 import 'winston-daily-rotate-file';
 

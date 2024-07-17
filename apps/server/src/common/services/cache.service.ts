@@ -1,4 +1,3 @@
-import { wrapAsyncMethodsOfClass } from '#/common/utils/async-error-handling.util';
 import { redisService } from './redis.service';
 
 /**
@@ -52,4 +51,5 @@ class CacheService {
   }
 }
 
-export const cache = wrapAsyncMethodsOfClass(new CacheService());
+const cacheService = new CacheService();
+export default cacheService;
