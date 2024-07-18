@@ -8,10 +8,12 @@ interface CommonPayload {
 
 export type AccessTokenPayloadDTO = {
   userId: string;
+  deviceId: string;
 } & CommonPayload;
 
 export type RefreshTokenPayloadDTO = {
   userId: string;
+  deviceId: string;
 } & CommonPayload;
 
 export type ActivationTokenPayloadDTO = {
@@ -20,11 +22,13 @@ export type ActivationTokenPayloadDTO = {
 } & CommonPayload;
 
 export type AccessTokenParams = {
-  userId: string | number;
+  userId: string;
+  deviceId: string;
 };
 
 export type RefreshTokenParams = {
-  userId: string | number;
+  userId: string;
+  deviceId: string;
 };
 
 export type ActivationTokenParams = {

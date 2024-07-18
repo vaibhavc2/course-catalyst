@@ -101,6 +101,8 @@ class UserController {
   }
 
   async getProfile(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
     const { message, data } =
       (await userService.getProfile({
         userId: req.user?.id as string,
@@ -110,9 +112,7 @@ class UserController {
   }
 
   async getUserInfo(req: Request, res: Response) {
-    if (!req.user) {
-      throw ApiError.unauthorized('User not found! Please login again.');
-    }
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
 
     const data = {
       user: req.user,
@@ -123,6 +123,8 @@ class UserController {
   }
 
   async updateUserInfo(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
     const { name, email } = req.body as UserDTO.UpdateUserInfo;
 
     const { message, data } =
@@ -138,6 +140,8 @@ class UserController {
   }
 
   async changePassword(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
     const { currentPassword, newPassword } = req.body as UserDTO.ChangePassword;
 
     const { message, data } =
@@ -151,6 +155,8 @@ class UserController {
   }
 
   async logout(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
     const { message, data } = await userService.logout({
       userId: req.user?.id as string,
       deviceId: req.deviceId as string,
@@ -162,6 +168,8 @@ class UserController {
   }
 
   async logoutAllDevices(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
     const { message, data } = await userService.logoutAllDevices({
       userId: req.user?.id as string,
     });
@@ -172,4 +180,5 @@ class UserController {
   }
 }
 
-export const userController = wrapAsyncMethodsOfClass(new UserController());
+const userController = wrapAsyncMethodsOfClass(new UserController());
+export default userController;

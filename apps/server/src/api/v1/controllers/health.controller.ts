@@ -13,4 +13,5 @@ class HealthController {
   }
 }
 
-export const healthController = wrapAsyncMethodsOfClass(new HealthController());
+const healthController = wrapAsyncMethodsOfClass(new HealthController());
+export default healthController;

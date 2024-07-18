@@ -78,6 +78,69 @@ class AvatarService implements AvatarServiceInterface {
       };
     }
   }
+
+  async getInfo({ userId }: AvatarDTO.Get) {
+    // Get avatar from the database
+    const avatar = await prisma.avatar.findUnique({
+      where: {
+        userId,
+      },
+    });
+
+    if (!avatar) throw ApiError.notFound('Avatar not found!');
+
+    return {
+      message: 'Avatar fetched successfully',
+      data: { avatar },
+    };
+  }
+
+  async delete({ userId }: AvatarDTO.Delete) {
+    // delete avatar from the database in transaction, then delete from cloudinary: retrieve public_id for that
+    const { public_id, user } =
+      (await prisma.$transaction(async (prisma) => {
+        // Check if the User already has an Avatar
+        const existingAvatar = await prisma.avatar.findUnique({
+          where: { userId },
+        });
+
+        if (!existingAvatar) return null;
+
+        // Delete avatar from the database
+        await prisma.avatar.delete({
+          where: {
+            userId,
+          },
+        });
+
+        // Then, update the user to set avatarId to null
+        const user = await prisma.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            avatarId: null,
+          },
+        });
+
+        const { password, ...userWithoutPassword } = user;
+
+        return {
+          public_id: existingAvatar.public_id,
+          user: userWithoutPassword,
+        };
+      })) ?? {};
+
+    if (!public_id) throw ApiError.notFound('Avatar not found!');
+
+    // delete existing avatar from cloudinary
+    await cloudinaryService.delete(public_id);
+
+    return {
+      message: 'Avatar deleted successfully!',
+      data: { user },
+    };
+  }
 }
 
 const avatarService = new AvatarService();

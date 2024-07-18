@@ -1,9 +1,8 @@
 export enum REDIS_KEY_PREFIXES {
   ACTIVATION = 'activation',
-  SESSION = 'session',
+  REFRESH_TOKEN = 'refreshToken',
+  ACCESS_TOKEN = 'accessToken',
   INVALIDATED = 'invalidated',
-  PASSWORD_RESET = 'passwordReset',
-  OTP = 'otp',
-  USER = 'user',
+  PASSWORD = 'password',
   USER_PROFILE = 'userProfile',
 }

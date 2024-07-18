@@ -17,7 +17,7 @@ export const RegisterSchema = z.object({
     password: z
       .string({ required_error: zodErrors.required('Password') })
       .min(6, { message: zodErrors.minString('Password', 6) })
-      .max(255, { message: zodErrors.largeString('Password', 255) })
+      .max(30, { message: zodErrors.largeString('Password', 30) })
       .regex(/^(?=.*\d)(?=.*\W).*$/, {
         message: 'Password must contain at least a digit, and a symbol.',
       }),

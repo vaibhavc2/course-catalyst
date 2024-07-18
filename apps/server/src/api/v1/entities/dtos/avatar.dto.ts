@@ -9,4 +9,12 @@ export namespace AvatarDTO {
     avatar: AvatarImage;
     userId: string;
   }
+
+  export interface Delete {
+    userId: string;
+  }
+
+  export interface Get {
+    userId: string;
+  }
 }

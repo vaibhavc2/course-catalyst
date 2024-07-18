@@ -10,7 +10,8 @@ import auth from '#/common/middlewares/auth.middleware';
 import deviceMiddleware from '#/common/middlewares/device.middleware';
 import validation from '#/common/middlewares/validation.middleware';
 import express from 'express';
-import { userController } from '../controllers/user.controller';
+import userController from '../controllers/user.controller';
+import passwordMiddleware from '#/common/middlewares/password.middleware';
 
 const router = express.Router();
 
@@ -31,32 +32,66 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User registered successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: 60f3b3b3b3b3b3b3b3b3b3b3
+ *                         name:
+ *                           type: string
+ *                           example: john doe
+ *                         email:
+ *                           type: string
+ *                           example: johndoe@example.com
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: 2021-07-18T12:00:00.000Z
+ *                         updatedAt:
+ *                           type: string
+ *                           example: 2021-07-18T12:00:00.000Z
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  * components:
  *   schemas:
- *      RegisterDTO:
- *        type: object
- *        properties:
- *          name:
- *            type: string
- *          email:
- *            type: string
- *            format: email
- *          password:
- *            type: string
- *            format: password
- *        required:
- *          - name
- *          - email
- *          - password
+ *     RegisterDTO:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: John Doe
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: johndoe@example.com
+ *         password:
+ *           type: string
+ *           format: password
+ *           example: password@123
+ *       required:
+ *         - name
+ *         - email
+ *         - password
  */
 router.post(
   '/register',
   validation.requiredFields(['name', 'email', 'password']),
   validation.zod(RegisterSchema),
+  passwordMiddleware.hash,
   userController.register,
 );
 
@@ -98,9 +133,11 @@ router.post(
  *          email:
  *            type: string
  *            format: email
+ *            example: johndoe@example.com
  *          password:
  *            type: string
  *            format: password
+ *            example: password@123
  *        required:
  *          - email
  *          - password
@@ -142,8 +179,10 @@ router.post(
  *          email:
  *            type: string
  *            format: email
+ *            example: johndoe@example.com
  *          otpCode:
  *            type: string
+ *            example: 123456
  *        required:
  *          - email
  *          - otpCode
@@ -179,6 +218,7 @@ router.post('/verify', validation.zod(VerifySchema), userController.verify);
  *          email:
  *            type: string
  *            format: email
+ *            example: johndoe@example.com
  *        required:
  *          - email
  */
@@ -332,14 +372,16 @@ router.patch(
  *     tags:
  *       - Users
  *     summary: Logout a user
- *     description: Logout a user
+ *     description: Logout a user. This route allows a user to logout from the current session.
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User logged out successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request. This could be due to an invalid request format.
  *       500:
- *         description: Internal server error
+ *         description: Internal server error. An error occurred on the server side.
  */
 router.delete(
   '/logout',
@@ -355,14 +397,16 @@ router.delete(
  *     tags:
  *       - Users
  *     summary: Logout user from all devices
- *     description: Logout user from all devices
+ *     description: Logout user from all devices. This route allows a user to logout from all sessions across all devices.
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User logged out from all devices successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request. This could be due to an invalid request format.
  *       500:
- *         description: Internal server error
+ *         description: Internal server error. An error occurred on the server side.
  */
 router.delete(
   '/logout-all-devices',

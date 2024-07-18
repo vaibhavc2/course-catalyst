@@ -16,6 +16,25 @@ class AvatarController {
 
     return new ApiResponse(res).success(message, data);
   }
+
+  async getInfo(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
+    const { message, data } =
+      (await avatarService.getInfo({ userId: req.user?.id })) ?? {};
+
+    return new ApiResponse(res).success(message, data);
+  }
+
+  async delete(req: Request, res: Response) {
+    if (!req.user) throw ApiError.unauthorized('Unauthenticated! Login first!');
+
+    const { message, data } =
+      (await avatarService.delete({ userId: req.user?.id })) ?? {};
+
+    return new ApiResponse(res).success(message, data);
+  }
 }
 
-export const avatarController = wrapAsyncMethodsOfClass(new AvatarController());
+const avatarController = wrapAsyncMethodsOfClass(new AvatarController());
+export default avatarController;

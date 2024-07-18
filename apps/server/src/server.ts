@@ -1,9 +1,11 @@
+import { Application } from 'express';
+import { IncomingMessage, Server, ServerResponse } from 'http';
 import { App } from './app';
-import { logger } from './common/utils/logger.util';
 import envConfig from './common/config/env.config';
 import { ct } from './common/constants';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { Application } from 'express';
+import prisma from './common/prisma.client';
+import { redis } from './common/services/redis.service';
+import { logger } from './common/utils/logger.util';
 
 const { PORT, NODE_ENV, isDev, isProd } = envConfig;
 
@@ -36,11 +38,21 @@ class HTTPServer {
   gracefulShutdown(
     waitTime: number = 5000, // Default wait time of 5 seconds
   ) {
-    console.debug('\n=> Signal received: closing HTTP server...');
+    console.debug('\nSignal received: closing HTTP server...');
 
     // Stop accepting new connections
-    this.server.close(() => {
+    this.server.close(async () => {
       console.debug('HTTP server closed gracefully.');
+
+      try {
+        await redis.quit(); // Close Redis connection
+
+        await prisma.$disconnect(); // Close Prisma connection
+
+        console.debug('Connections closed successfully.');
+      } catch (error) {
+        logger.error('Error while closing connections: ' + error);
+      }
     });
 
     // Wait for ongoing requests to finish with a timeout

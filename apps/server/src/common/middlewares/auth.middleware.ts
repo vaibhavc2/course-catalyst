@@ -57,7 +57,7 @@ class Auth {
           Number(iat) < Number(invalidationTimestamp)
         ) {
           throw ApiError.unauthorized(
-            'Access Token Invalidated! Unauthorized!',
+            'Access Token Invalidated! Please login again!',
           );
         }
 
@@ -65,7 +65,7 @@ class Auth {
         const user = await prisma.user.findUnique({ where: { id: userId } });
 
         if (!user) {
-          throw ApiError.unauthorized('User not found! Unauthorized!');
+          throw ApiError.unauthorized('User not found!');
         }
 
         // check if user is verified

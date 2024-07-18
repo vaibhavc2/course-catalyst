@@ -13,6 +13,7 @@ import { getErrorMessage } from '#/common/utils/error-extras.util';
 import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { logger } from '../utils/logger.util';
 import { convertTimeStr } from '../utils/time.util';
+import { RedisService, redisService } from './redis.service';
 
 const {
   ACCESS_TOKEN_SECRET,
@@ -67,6 +68,20 @@ class JWTService {
     return sign(dataWithTimestamps, secret);
   };
 
+  private errorCallback =
+    (resolve: (value: any) => void, reject: (reason?: any) => void) =>
+    (err: unknown, payload: any) => {
+      if (err) {
+        if (err instanceof TokenExpiredError) {
+          logger.error('Token expired: ' + payload);
+        } else {
+          logger.error('Token verification error: ' + err);
+        }
+        reject(getErrorMessage(err) || 'Invalid Token or Token Expired!');
+      }
+      return resolve(payload);
+    };
+
   private disableToken = async (params: { token: string; secret: string }) => {
     const { token, secret } = params;
     return await this.generateToken({
@@ -83,51 +98,76 @@ class JWTService {
     );
   };
 
-  private errorCallback =
-    (resolve: (value: any) => void, reject: (reason?: any) => void) =>
-    (err: unknown, payload: any) => {
-      if (err) {
-        if (err instanceof TokenExpiredError) {
-          logger.error('Token expired: ' + payload);
-        } else {
-          logger.error('Token verification error: ' + err);
-        }
-        reject(getErrorMessage(err) || 'Invalid Token or Token Expired!');
-      }
-      return resolve(payload);
-    };
-
-  generateAccessToken = async ({ userId }: AccessTokenParams) => {
+  generateAccessToken = async ({ userId, deviceId }: AccessTokenParams) => {
     return await this.generateToken({
       secret: this.accessToken.secret,
       expiresIn: this.accessToken.expiresIn,
       data: {
         userId,
+        deviceId,
         type: JWT_TOKENS.ACCESS,
       },
     });
   };
 
-  generateRefreshToken = async ({ userId }: RefreshTokenParams) => {
-    return await this.generateToken({
+  generateRefreshToken = async (
+    { userId, deviceId }: RefreshTokenParams,
+    { upload }: { upload: boolean },
+  ) => {
+    const token = await this.generateToken({
       secret: this.refreshToken.secret,
       expiresIn: this.refreshToken.expiresIn,
       data: {
         userId,
+        deviceId,
         type: JWT_TOKENS.REFRESH,
       },
     });
+
+    if (!upload) return token;
+
+    // Store refresh token in Redis with expiry (store session)
+    await redisService.setex(
+      RedisService.createKey('REFRESH_TOKEN', userId, deviceId),
+      convertTimeStr(REFRESH_TOKEN_EXPIRY),
+      token,
+    );
+
+    return token;
   };
 
-  generateActivationToken = async ({
-    email,
-    otpCode,
-  }: ActivationTokenParams) => {
-    return await this.generateToken({
+  generateAccessAndRefreshTokens = async (
+    { userId, deviceId }: AccessTokenParams & RefreshTokenParams,
+    { upload }: { upload: boolean },
+  ) => {
+    const accessToken = await this.generateAccessToken({ userId, deviceId });
+    const refreshToken = await this.generateRefreshToken(
+      { userId, deviceId },
+      { upload },
+    );
+
+    return { accessToken, refreshToken };
+  };
+
+  generateActivationToken = async (
+    { email, otpCode }: ActivationTokenParams,
+    { upload }: { upload: boolean },
+  ) => {
+    const token = await this.generateToken({
       secret: this.activationToken.secret,
       expiresIn: this.activationToken.expiresIn,
       data: { email, otpCode, type: JWT_TOKENS.ACTIVATION },
     });
+    if (!upload) return token;
+
+    // Store activation token in Redis with expiry
+    await redisService.setex(
+      RedisService.createKey('ACTIVATION', email),
+      convertTimeStr(ACTIVATION_TOKEN_EXPIRY),
+      token,
+    );
+
+    return token;
   };
 
   verifyAccessToken = async (token: string) => {

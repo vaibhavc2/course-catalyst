@@ -46,29 +46,41 @@ const prisma = new PrismaClient(
         // Skip if the model is not User
         if (model !== 'User') return query(args);
 
+        // Check if the password should be hashed: (not hashed by other middleware)
+        const shouldHashPassword = (password: any) => {
+          return !(password.startsWith('$argon2id$') && password.length > 30);
+        };
+        // must be less than 30 characters -> this case handled by the max(30) in the zod schema, so the the above function is fully functional and error-free -> but it will only be fully correct if the limit to the password is set in the zod schema or any other validation schema for the password
+
         // Handle different operations that include user data differently
         if (operation === 'create' && args.data) {
           // For create operations, args.data exists
-          if (args.data.password) {
+          if (args.data.password && shouldHashPassword(args.data.password)) {
             args.data.password = await pwdService.hash(
               String(args.data.password),
             );
           }
         } else if (operation === 'update' && args.data) {
           // For update operations, args.data exists
-          if (args.data.password) {
+          if (args.data.password && shouldHashPassword(args.data.password)) {
             args.data.password = await pwdService.hash(
               String(args.data.password),
             );
           }
         } else if (operation === 'upsert' && args.create && args.update) {
           // For upsert operations, args.create and args.update exist
-          if (args.create.password) {
+          if (
+            args.create.password &&
+            shouldHashPassword(args.create.password)
+          ) {
             args.create.password = await pwdService.hash(
               String(args.create.password),
             );
           }
-          if (args.update.password) {
+          if (
+            args.update.password &&
+            shouldHashPassword(args.update.password)
+          ) {
             args.update.password = await pwdService.hash(
               String(args.update.password),
             );
@@ -76,15 +88,17 @@ const prisma = new PrismaClient(
         } else if (operation === 'createMany' && args.data) {
           // For createMany operations, args.data exists
           if (Array.isArray(args.data)) {
-            args.data.forEach(async (user) => {
-              if (user.password) {
-                user.password = await pwdService.hash(String(user.password));
-              }
-            }); // hash the password for each user
+            await Promise.all(
+              args.data.map(async (user) => {
+                if (user.password && shouldHashPassword(user.password)) {
+                  user.password = await pwdService.hash(String(user.password));
+                }
+              }),
+            ); // hash the password for each user
           }
         } else if (operation === 'updateMany' && args.data) {
           // For updateMany operations, args.data exists
-          if (args.data.password) {
+          if (args.data.password && shouldHashPassword(args.data.password)) {
             args.data.password = await pwdService.hash(
               String(args.data.password),
             );

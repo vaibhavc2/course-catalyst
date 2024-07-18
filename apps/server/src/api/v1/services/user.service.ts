@@ -15,9 +15,9 @@ import ApiError from '#/common/utils/api-error.util';
 import { convertTimeStr } from '#/common/utils/time.util';
 import { StandardResponseDTO } from '#/types';
 import emailService from './external/email.service';
+import { v4 as uuidv4 } from 'uuid';
 
-const { ACTIVATION_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY, ACCESS_TOKEN_EXPIRY } =
-  envConfig;
+const { ACCESS_TOKEN_EXPIRY } = envConfig;
 
 interface Tokens {
   accessToken: string;
@@ -59,11 +59,16 @@ class UserService implements UserServiceDTO {
     // Generate OTP code
     const otpCode = otpService.generateSecureOTP(6).string;
 
-    // Generate activation token
-    const activationToken = await jwtService.generateActivationToken({
-      email,
-      otpCode,
-    });
+    // Generate activation token and upload to Redis
+    const activationToken = await jwtService.generateActivationToken(
+      {
+        email,
+        otpCode,
+      },
+      { upload: true },
+    );
+
+    if (!activationToken) throw ApiError.internal('Failed to generate token!');
 
     // Send verification email
     const emailResponse = await emailService.sendVerificationEmail({
@@ -73,16 +78,6 @@ class UserService implements UserServiceDTO {
 
     if (!emailResponse)
       throw ApiError.internal('Failed to send email! Please try again.');
-
-    // Store activation token in Redis with expiry
-    const redisResponse = await redisService.setex(
-      RedisService.createKey('ACTIVATION', email),
-      convertTimeStr(ACTIVATION_TOKEN_EXPIRY),
-      activationToken,
-    );
-
-    if (!redisResponse)
-      throw ApiError.internal('Activation token failure! Please try again.');
 
     return true;
   }
@@ -107,7 +102,7 @@ class UserService implements UserServiceDTO {
       data: {
         name,
         email,
-        password, // password is hashed by Prisma hook
+        password, // password is hashed by middleware
       },
     });
 
@@ -117,10 +112,12 @@ class UserService implements UserServiceDTO {
     // Omit password from response
     const { password: _, ...userData } = user;
 
-    // // Set cache
-    // await cache.set(RedisService.createKey('USER', user.id), {
-    //   user: userData,
-    // });
+    // Set cache for password
+    await cacheService.set(
+      RedisService.createKey('PASSWORD', user.id, uuidv4()),
+      password, // password is hashed by middleware
+      3600 * 24 * 7, // 7 days
+    );
 
     return {
       message:
@@ -151,27 +148,23 @@ class UserService implements UserServiceDTO {
     if (!user.isVerified)
       throw ApiError.forbidden('Please verify your email first!');
 
-    // Generate access token
-    const accessToken = await jwtService.generateAccessToken({
-      userId: user.id,
-    });
-
-    // Generate refresh token
-    const refreshToken = await jwtService.generateRefreshToken({
-      userId: user.id,
-    });
-
-    // Store refresh token in Redis with expiry (store session)
-    await redisService.hmset_with_expiry(
-      RedisService.createKey('SESSION', user.id, deviceId),
-      convertTimeStr(REFRESH_TOKEN_EXPIRY),
-      {
-        deviceId: deviceId,
-        refreshToken: refreshToken,
-      },
-    );
+    // Generate access and refresh tokens, and upload refresh token
+    const { accessToken, refreshToken } =
+      await jwtService.generateAccessAndRefreshTokens(
+        {
+          userId: user.id,
+          deviceId,
+        },
+        { upload: true },
+      );
 
     const { password: _, ...userData } = user;
+
+    // Set cache
+    await cacheService.set(
+      RedisService.createKey('USER_PROFILE', user.id),
+      userData,
+    );
 
     return {
       message: 'User logged in successfully!',
@@ -247,11 +240,6 @@ class UserService implements UserServiceDTO {
     // Omit password from response
     const { password: _, ...userData } = user;
 
-    // // Update cache
-    // await cache.update(RedisService.createKey('USER', user.id), {
-    //   user: userData,
-    // });
-
     return {
       message: 'User verified successfully!',
       data: { user: userData },
@@ -267,37 +255,22 @@ class UserService implements UserServiceDTO {
       throw ApiError.unauthorized('Invalid token! Please login.');
 
     // Check if session exists in Redis
-    const sessionKey = RedisService.createKey('SESSION', userId, deviceId);
-    const session = await redisService.hmget(sessionKey);
+    const token = await redisService.get(
+      RedisService.createKey('REFRESH_TOKEN', userId, deviceId),
+    );
 
-    if (!session) throw ApiError.unauthorized('Session expired! Please login.');
-
-    // Check if device ID matches
-    if (session[0] !== deviceId)
-      throw ApiError.unauthorized('Invalid device! Please login.');
+    if (!token) throw ApiError.unauthorized('Invalid session! Please login.');
 
     // Check if refresh token matches
-    if (session[1] !== refreshToken)
+    if (token !== refreshToken)
       throw ApiError.unauthorized('Invalid token! Please login.');
 
-    // Delete old refresh token
-    await redisService.del(sessionKey);
-
-    // Generate new access token
-    const accessToken = await jwtService.generateAccessToken({ userId });
-
-    // Generate new refresh token
-    const newRefreshToken = await jwtService.generateRefreshToken({ userId });
-
-    // Store new refresh token in Redis with expiry (store session)
-    await redisService.hmset_with_expiry(
-      sessionKey,
-      convertTimeStr(REFRESH_TOKEN_EXPIRY),
-      {
-        deviceId: deviceId,
-        refreshToken: refreshToken,
-      },
-    );
+    // Generate new access token, refresh token, and upload refresh token
+    const { accessToken, refreshToken: newRefreshToken } =
+      await jwtService.generateAccessAndRefreshTokens(
+        { userId, deviceId },
+        { upload: true },
+      );
 
     return {
       message: 'Token refreshed successfully!',
@@ -388,11 +361,6 @@ class UserService implements UserServiceDTO {
     // Omit password from response
     const { password, ...userData } = user;
 
-    // // Update cache
-    // await cache.update(RedisService.createKey('USER', user.id), {
-    //   user: userData,
-    // });
-
     return {
       message: 'User info updated successfully!',
       data: { user: userData },
@@ -422,6 +390,22 @@ class UserService implements UserServiceDTO {
     if (!isPasswordCorrect)
       throw ApiError.badRequest('Invalid current password! Please try again.');
 
+    // Check against the cache-stored passwords
+    const prevPasswords = await redisService.get_values(
+      RedisService.createKey('PASSWORD', userId, '*'),
+    );
+
+    if (prevPasswords && prevPasswords.length) {
+      // match all against the current password
+      prevPasswords.forEach(async (pwd) => {
+        const isMatch = await pwdService.verify(String(pwd), currentPassword);
+        if (isMatch)
+          throw ApiError.badRequest(
+            'Password already used recently! Please try a different one.',
+          );
+      });
+    }
+
     // Update user password
     const updatedUser = await prisma.user.update({
       where: {
@@ -435,6 +419,13 @@ class UserService implements UserServiceDTO {
     if (!updatedUser)
       throw ApiError.internal('Failed to update password. Please try again.');
 
+    // Set cache for password
+    await cacheService.set(
+      RedisService.createKey('PASSWORD', userId, uuidv4()),
+      await pwdService.hash(newPassword),
+      3600 * 24 * 7, // 7 days
+    );
+
     return {
       message: 'Password updated successfully!',
       data: null,
@@ -443,7 +434,9 @@ class UserService implements UserServiceDTO {
 
   async logout({ deviceId, userId }: UserDTO.Logout) {
     // Delete refresh token from Redis
-    await redisService.del(RedisService.createKey('SESSION', userId, deviceId));
+    await redisService.del(
+      RedisService.createKey('REFRESH_TOKEN', userId, deviceId),
+    );
 
     return {
       message: 'Logged out successfully!',
@@ -453,13 +446,15 @@ class UserService implements UserServiceDTO {
 
   async logoutAllDevices({ userId }: UserDTO.LogoutAllDevices) {
     // Delete all sessions of user from Redis
-    await redisService.del_keys(RedisService.createKey('SESSION', userId, '*'));
+    await redisService.del_keys(
+      RedisService.createKey('REFRESH_TOKEN', userId, '*'),
+    );
 
     // Store the current timestamp in Redis (to invalidate access tokens)
     await redisService.setex(
       RedisService.createKey('INVALIDATED', userId),
       convertTimeStr(ACCESS_TOKEN_EXPIRY),
-      Date.now().toString(),
+      (Date.now() / 1000).toString(),
     );
 
     return {
