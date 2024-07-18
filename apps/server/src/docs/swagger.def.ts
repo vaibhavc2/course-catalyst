@@ -1,4 +1,4 @@
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import swaggerJSDoc from 'swagger-jsdoc';
 
 export const swaggerDefinition: swaggerJSDoc.OAS3Definition = {

@@ -1,6 +1,6 @@
 import auth from '#/common/middlewares/auth.middleware';
 import multerService from '#/common/middlewares/multer.middleware';
-import { uploadMiddleware } from '#/common/middlewares/upload.middleware';
+import uploadMiddleware from '#/common/middlewares/upload.middleware';
 import { Router } from 'express';
 import avatarController from '../controllers/avatar.controller';
 

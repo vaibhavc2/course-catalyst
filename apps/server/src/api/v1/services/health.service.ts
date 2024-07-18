@@ -1,7 +1,7 @@
 import { HealthDTO } from '#/api/v1/entities/dtos/health.dto';
 import { StatusCode } from '#/api/v1/entities/enums/error.enums';
 import checkupService from '#/api/v1/services/external/checkup.service';
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import { StandardResponseDTO } from '#/types';
 
 interface results {

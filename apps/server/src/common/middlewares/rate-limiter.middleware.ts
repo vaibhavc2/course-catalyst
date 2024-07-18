@@ -1,4 +1,4 @@
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import { redis } from '#/common/services/redis.service';
 import rateLimit, { Store } from 'express-rate-limit';
 import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';

@@ -4,7 +4,7 @@ import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import envConfig from './common/config/env.config';
-import { ct } from './common/constants';
+import ct from './common/constants';
 import Docs from './common/middlewares/docs.middleware';
 import errorMiddleware from './common/middlewares/error.middleware';
 import { globalApiRateLimiter } from './common/middlewares/rate-limiter.middleware';

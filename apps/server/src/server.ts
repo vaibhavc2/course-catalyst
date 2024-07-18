@@ -2,7 +2,7 @@ import { Application } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { App } from './app';
 import envConfig from './common/config/env.config';
-import { ct } from './common/constants';
+import ct from './common/constants';
 import prisma from './common/prisma.client';
 import { redis } from './common/services/redis.service';
 import { logger } from './common/utils/logger.util';

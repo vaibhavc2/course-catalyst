@@ -10,7 +10,7 @@ const corsMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'];
 
 type SameSiteOptions = 'strict' | 'lax' | 'none';
 
-export const ct = {
+const ct = {
   expressLimit: '50mb',
   corsMethods,
   corsOptions: {
@@ -67,3 +67,5 @@ export const ct = {
     ],
   },
 };
+
+export default ct;

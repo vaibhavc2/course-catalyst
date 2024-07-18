@@ -1,6 +1,6 @@
 import { HealthDTO } from '#/api/v1/entities/dtos/health.dto';
 import { StatusCode } from '#/api/v1/entities/enums/error.enums';
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import { asyncFnWrapper } from '#/common/utils/async-errors.util';
 import { getErrorMessage } from '#/common/utils/error-extras.util';
 import { logger } from '#/common/utils/logger.util';

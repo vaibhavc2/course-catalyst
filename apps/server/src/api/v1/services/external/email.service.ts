@@ -1,6 +1,6 @@
 import { logger } from '#/common/utils/logger.util';
 import envConfig from '#/common/config/env.config';
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import { printErrorMessage } from '#/common/utils/error-extras.util';
 import { renderVerifyEmail } from '@lms/transactional';
 import { Resend } from 'resend';

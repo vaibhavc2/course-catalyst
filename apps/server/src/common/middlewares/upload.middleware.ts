@@ -1,4 +1,4 @@
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import ApiError from '#/common/utils/api-error.util';
 import { asyncErrorHandler } from '#/common/utils/async-errors.util';
 import { NextFunction, Request, Response } from 'express';
@@ -58,4 +58,5 @@ class UploadMiddleware {
     });
 }
 
-export const uploadMiddleware = new UploadMiddleware();
+const uploadMiddleware = new UploadMiddleware();
+export default uploadMiddleware;

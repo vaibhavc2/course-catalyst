@@ -1,4 +1,4 @@
-import { ct } from '#/common/constants';
+import ct from '#/common/constants';
 import { convertTimeStr } from './time.util';
 
 export const getCookieOptions = (expiresIn: string) => {
