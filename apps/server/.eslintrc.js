@@ -16,6 +16,9 @@ module.exports = {
     // jest: true,
   },
   ignorePatterns: [
+    '**/*.config.ts',
+    '*.cjs',
+    '*.json',
     '.eslintrc.js',
     'dist/',
     'node_modules/',
