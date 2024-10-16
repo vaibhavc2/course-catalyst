@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from "express";
-import { CatchAsyncError } from "./catchAsyncErrors";
-import ErrorHandler from "../utils/ErrorHandler";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { redis } from "../utils/redis";
-import { updateAccessToken } from "../controllers/user.controller";
+import { Request, Response, NextFunction } from 'express';
+import { CatchAsyncError } from './catchAsyncErrors';
+import ErrorHandler from '../utils/ErrorHandler';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { redis } from '../utils/redis';
+import { updateAccessToken } from '../controllers/user.controller';
 
 // authenticated user
 export const isAutheticated = CatchAsyncError(
@@ -12,14 +12,14 @@ export const isAutheticated = CatchAsyncError(
 
     if (!access_token) {
       return next(
-        new ErrorHandler("Please login to access this resource", 400)
+        new ErrorHandler('Please login to access this resource', 400),
       );
     }
 
     const decoded = jwt.decode(access_token) as JwtPayload;
 
     if (!decoded) {
-      return next(new ErrorHandler("access token is not valid", 400));
+      return next(new ErrorHandler('access token is not valid', 400));
     }
 
     // check if the access token is expired
@@ -34,7 +34,7 @@ export const isAutheticated = CatchAsyncError(
 
       if (!user) {
         return next(
-          new ErrorHandler("Please login to access this resource", 400)
+          new ErrorHandler('Please login to access this resource', 400),
         );
       }
 
@@ -42,18 +42,18 @@ export const isAutheticated = CatchAsyncError(
 
       next();
     }
-  }
+  },
 );
 
 // validate user role
 export const authorizeRoles = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user?.role || "")) {
+    if (!roles.includes(req.user?.role || '')) {
       return next(
         new ErrorHandler(
           `Role: ${req.user?.role} is not allowed to access this resource`,
-          403
-        )
+          403,
+        ),
       );
     }
     next();

@@ -1,14 +1,14 @@
-import React, { FC, useEffect, useState } from "react";
-import UserAnalytics from "../Analytics/UserAnalytics";
-import { BiBorderLeft } from "react-icons/bi";
-import { PiUsersFourLight } from "react-icons/pi";
-import { Box, CircularProgress } from "@mui/material";
-import OrdersAnalytics from "../Analytics/OrdersAnalytics";
-import AllInvoices from "../Order/AllInvoices";
+import React, { FC, useEffect, useState } from 'react';
+import UserAnalytics from '../Analytics/UserAnalytics';
+import { BiBorderLeft } from 'react-icons/bi';
+import { PiUsersFourLight } from 'react-icons/pi';
+import { Box, CircularProgress } from '@mui/material';
+import OrdersAnalytics from '../Analytics/OrdersAnalytics';
+import AllInvoices from '../Order/AllInvoices';
 import {
   useGetOrdersAnalyticsQuery,
   useGetUsersAnalyticsQuery,
-} from "@/redux/features/analytics/analyticsApi";
+} from '@/redux/features/analytics/analyticsApi';
 
 type Props = {
   open?: boolean;
@@ -17,12 +17,12 @@ type Props = {
 
 const CircularProgressWithLabel: FC<Props> = ({ open, value }) => {
   return (
-    <Box sx={{ position: "relative", display: "inline-flex" }}>
+    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
       <CircularProgress
         variant="determinate"
         value={value}
         size={45}
-        color={value && value > 99 ? "info" : "error"}
+        color={value && value > 99 ? 'info' : 'error'}
         thickness={4}
         style={{ zIndex: open ? -1 : 1 }}
       />
@@ -32,10 +32,10 @@ const CircularProgressWithLabel: FC<Props> = ({ open, value }) => {
           left: 0,
           bottom: 0,
           right: 0,
-          position: "absolute",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       ></Box>
     </Box>
@@ -67,13 +67,19 @@ const DashboardWidgets: FC<Props> = ({ open }) => {
           const ordersCurrentMonth = ordersLastTwoMonths[1].count;
           const ordersPreviousMonth = ordersLastTwoMonths[0].count;
 
-          const usersPercentChange = usersPreviousMonth !== 0 ?
-            ((usersCurrentMonth - usersPreviousMonth) / usersPreviousMonth) *
-            100 : 100;
+          const usersPercentChange =
+            usersPreviousMonth !== 0
+              ? ((usersCurrentMonth - usersPreviousMonth) /
+                  usersPreviousMonth) *
+                100
+              : 100;
 
-          const ordersPercentChange = ordersPreviousMonth !== 0 ?
-            ((ordersCurrentMonth - ordersPreviousMonth) / ordersPreviousMonth) *
-            100 : 100;
+          const ordersPercentChange =
+            ordersPreviousMonth !== 0
+              ? ((ordersCurrentMonth - ordersPreviousMonth) /
+                  ordersPreviousMonth) *
+                100
+              : 100;
 
           setuserComparePercentage({
             currentMonth: usersCurrentMonth,
@@ -111,17 +117,16 @@ const DashboardWidgets: FC<Props> = ({ open }) => {
                 </h5>
               </div>
               <div>
-                <CircularProgressWithLabel value={
-                  ordersComparePercentage?.percentChange > 0 
-                  ? 100 
-                  : 0
-                } open={open} />
+                <CircularProgressWithLabel
+                  value={ordersComparePercentage?.percentChange > 0 ? 100 : 0}
+                  open={open}
+                />
                 <h5 className="text-center pt-4">
-                 {
-                  ordersComparePercentage?.percentChange > 0 
-                  ? "+" + ordersComparePercentage?.percentChange.toFixed(2)
-                  : "-" + ordersComparePercentage?.percentChange.toFixed(2)
-                 } %
+                  {ordersComparePercentage?.percentChange > 0
+                    ? '+' + ordersComparePercentage?.percentChange.toFixed(2)
+                    : '-' +
+                      ordersComparePercentage?.percentChange.toFixed(2)}{' '}
+                  %
                 </h5>
               </div>
             </div>
@@ -139,15 +144,16 @@ const DashboardWidgets: FC<Props> = ({ open }) => {
                 </h5>
               </div>
               <div>
-                <CircularProgressWithLabel value={
-                  userComparePercentage?.percentChange > 0 
-                  ? 100 
-                  : 0
-                } open={open} />
+                <CircularProgressWithLabel
+                  value={userComparePercentage?.percentChange > 0 ? 100 : 0}
+                  open={open}
+                />
                 <h5 className="text-center pt-4">
                   {userComparePercentage?.percentChange > 0
-                    ? "+" + userComparePercentage?.percentChange.toFixed(2) 
-                    : "-" + userComparePercentage?.percentChange.toFixed(2)} %
+                    ? '+' + userComparePercentage?.percentChange.toFixed(2)
+                    : '-' +
+                      userComparePercentage?.percentChange.toFixed(2)}{' '}
+                  %
                 </h5>
               </div>
             </div>

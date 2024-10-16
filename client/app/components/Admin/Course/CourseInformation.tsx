@@ -1,6 +1,6 @@
-import { styles } from "@/app/styles/style";
-import { useGetHeroDataQuery } from "@/redux/features/layout/layoutApi";
-import React, { FC, useEffect, useState } from "react";
+import { styles } from '@/app/styles/style';
+import { useGetHeroDataQuery } from '@/redux/features/layout/layoutApi';
+import React, { FC, useEffect, useState } from 'react';
 
 type Props = {
   courseInfo: any;
@@ -16,7 +16,7 @@ const CourseInformation: FC<Props> = ({
   setActive,
 }) => {
   const [dragging, setDragging] = useState(false);
-  const { data } = useGetHeroDataQuery("Categories", {});
+  const { data } = useGetHeroDataQuery('Categories', {});
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -237,7 +237,7 @@ const CourseInformation: FC<Props> = ({
           <label
             htmlFor="file"
             className={`w-full min-h-[10vh] dark:border-white border-[#00000026] p-3 border flex items-center justify-center ${
-              dragging ? "bg-blue-500" : "bg-transparent"
+              dragging ? 'bg-blue-500' : 'bg-transparent'
             }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

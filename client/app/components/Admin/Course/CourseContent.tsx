@@ -1,9 +1,9 @@
-import { styles } from "@/app/styles/style";
-import React, { FC, useState } from "react";
-import { toast } from "react-hot-toast";
-import { AiOutlineDelete, AiOutlinePlusCircle } from "react-icons/ai";
-import { BsLink45Deg, BsPencil } from "react-icons/bs";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { styles } from '@/app/styles/style';
+import React, { FC, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { AiOutlineDelete, AiOutlinePlusCircle } from 'react-icons/ai';
+import { BsLink45Deg, BsPencil } from 'react-icons/bs';
+import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 
 type Props = {
   active: number;
@@ -21,7 +21,7 @@ const CourseContent: FC<Props> = ({
   handleSubmit: handlleCourseSubmit,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(
-    Array(courseContentData.length).fill(false)
+    Array(courseContentData.length).fill(false),
   );
 
   const [activeSection, setActiveSection] = useState(1);
@@ -44,22 +44,22 @@ const CourseContent: FC<Props> = ({
 
   const handleAddLink = (index: number) => {
     const updatedData = [...courseContentData];
-    updatedData[index].links.push({ title: "", url: "" });
+    updatedData[index].links.push({ title: '', url: '' });
     setCourseContentData(updatedData);
   };
 
   const newContentHandler = (item: any) => {
     if (
-      item.title === "" ||
-      item.description === "" ||
-      item.videoUrl === "" ||
-      item.links[0].title === "" ||
-      item.links[0].url === "" ||
-      item.videoLength === ""
+      item.title === '' ||
+      item.description === '' ||
+      item.videoUrl === '' ||
+      item.links[0].title === '' ||
+      item.links[0].url === '' ||
+      item.videoLength === ''
     ) {
-      toast.error("Please fill all the fields first!");
+      toast.error('Please fill all the fields first!');
     } else {
-      let newVideoSection = "";
+      let newVideoSection = '';
 
       if (courseContentData.length > 0) {
         const lastVideoSection =
@@ -71,12 +71,12 @@ const CourseContent: FC<Props> = ({
         }
       }
       const newContent = {
-        videoUrl: "",
-        title: "",
-        description: "",
+        videoUrl: '',
+        title: '',
+        description: '',
         videoSection: newVideoSection,
-        videoLength: "",
-        links: [{ title: "", url: "" }],
+        videoLength: '',
+        links: [{ title: '', url: '' }],
       };
 
       setCourseContentData([...courseContentData, newContent]);
@@ -85,22 +85,22 @@ const CourseContent: FC<Props> = ({
 
   const addNewSection = () => {
     if (
-      courseContentData[courseContentData.length - 1].title === "" ||
-      courseContentData[courseContentData.length - 1].description === "" ||
-      courseContentData[courseContentData.length - 1].videoUrl === "" ||
-      courseContentData[courseContentData.length - 1].links[0].title === "" ||
-      courseContentData[courseContentData.length - 1].links[0].url === ""
+      courseContentData[courseContentData.length - 1].title === '' ||
+      courseContentData[courseContentData.length - 1].description === '' ||
+      courseContentData[courseContentData.length - 1].videoUrl === '' ||
+      courseContentData[courseContentData.length - 1].links[0].title === '' ||
+      courseContentData[courseContentData.length - 1].links[0].url === ''
     ) {
-      toast.error("Please fill all the fields first!");
+      toast.error('Please fill all the fields first!');
     } else {
       setActiveSection(activeSection + 1);
       const newContent = {
-        videoUrl: "",
-        title: "",
-        description: "",
-        videoLength: "",
+        videoUrl: '',
+        title: '',
+        description: '',
+        videoLength: '',
         videoSection: `Untitled Section ${activeSection}`,
-        links: [{ title: "", url: "" }],
+        links: [{ title: '', url: '' }],
       };
       setCourseContentData([...courseContentData, newContent]);
     }
@@ -112,11 +112,11 @@ const CourseContent: FC<Props> = ({
 
   const handleOptions = () => {
     if (
-      courseContentData[courseContentData.length - 1].title === "" ||
-      courseContentData[courseContentData.length - 1].description === "" ||
-      courseContentData[courseContentData.length - 1].videoUrl === "" ||
-      courseContentData[courseContentData.length - 1].links[0].title === "" ||
-      courseContentData[courseContentData.length - 1].links[0].url === ""
+      courseContentData[courseContentData.length - 1].title === '' ||
+      courseContentData[courseContentData.length - 1].description === '' ||
+      courseContentData[courseContentData.length - 1].videoUrl === '' ||
+      courseContentData[courseContentData.length - 1].links[0].title === '' ||
+      courseContentData[courseContentData.length - 1].links[0].url === ''
     ) {
       toast.error("section can't be empty!");
     } else {
@@ -137,7 +137,7 @@ const CourseContent: FC<Props> = ({
             <>
               <div
                 className={`w-full bg-[#cdc8c817] p-4 ${
-                  showSectionInput ? "mt-10" : "mb-0"
+                  showSectionInput ? 'mt-10' : 'mb-0'
                 }`}
                 key={index}
               >
@@ -147,9 +147,9 @@ const CourseContent: FC<Props> = ({
                       <input
                         type="text"
                         className={`text-[20px] ${
-                          item.videoSection === "Untitled Section"
-                            ? "w-[170px]"
-                            : "w-min"
+                          item.videoSection === 'Untitled Section'
+                            ? 'w-[170px]'
+                            : 'w-min'
                         } font-Poppins cursor-pointer dark:text-white text-black bg-transparent outline-none`}
                         value={item.videoSection}
                         onChange={(e) => {
@@ -183,7 +183,7 @@ const CourseContent: FC<Props> = ({
                   <div className="flex items-center">
                     <AiOutlineDelete
                       className={`dark:text-white text-[20px] mr-2 text-black ${
-                        index > 0 ? "cursor-pointer" : "cursor-no-drop"
+                        index > 0 ? 'cursor-pointer' : 'cursor-no-drop'
                       }`}
                       onClick={() => {
                         if (index > 0) {
@@ -198,8 +198,8 @@ const CourseContent: FC<Props> = ({
                       className="dark:text-white text-black"
                       style={{
                         transform: isCollapsed[index]
-                          ? "rotate(180deg)"
-                          : "rotate(0deg)",
+                          ? 'rotate(180deg)'
+                          : 'rotate(0deg)',
                       }}
                       onClick={() => handleCollapseToggle(index)}
                     />
@@ -277,8 +277,8 @@ const CourseContent: FC<Props> = ({
                           <AiOutlineDelete
                             className={`${
                               linkIndex === 0
-                                ? "cursor-no-drop"
-                                : "cursor-pointer"
+                                ? 'cursor-no-drop'
+                                : 'cursor-pointer'
                             } text-black dark:text-white text-[20px]`}
                             onClick={() =>
                               linkIndex === 0

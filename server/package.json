@@ -5,12 +5,12 @@
   "type": "commonjs",
   "main": "build/server.js",
   "engines": {
-    "node":"18.x"
+    "node": "18.x"
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
-    "start":"node build/server.js",    
-    "build":"tsc"
+    "start": "node build/server.js",
+    "build": "tsc"
   },
   "author": "EC & SPM Project",
   "license": "ISC",

@@ -1,16 +1,16 @@
-import { NextFunction, Request, Response } from "express";
-import { CatchAsyncError } from "../middleware/catchAsyncErrors";
-import ErrorHandler from "../utils/ErrorHandler";
-import cloudinary from "cloudinary";
-import { createCourse, getAllCoursesService } from "../services/course.service";
-import CourseModel, { IComment } from "../models/course.model";
-import { redis } from "../utils/redis";
-import mongoose from "mongoose";
-import path from "path";
-import ejs from "ejs";
-import sendMail from "../utils/sendMail";
-import NotificationModel from "../models/notification.Model";
-import axios from "axios";
+import { NextFunction, Request, Response } from 'express';
+import { CatchAsyncError } from '../middleware/catchAsyncErrors';
+import ErrorHandler from '../utils/ErrorHandler';
+import cloudinary from 'cloudinary';
+import { createCourse, getAllCoursesService } from '../services/course.service';
+import CourseModel, { IComment } from '../models/course.model';
+import { redis } from '../utils/redis';
+import mongoose from 'mongoose';
+import path from 'path';
+import ejs from 'ejs';
+import sendMail from '../utils/sendMail';
+import NotificationModel from '../models/notification.Model';
+import axios from 'axios';
 
 // upload course
 export const uploadCourse = CatchAsyncError(
@@ -20,7 +20,7 @@ export const uploadCourse = CatchAsyncError(
       const thumbnail = data.thumbnail;
       if (thumbnail) {
         const myCloud = await cloudinary.v2.uploader.upload(thumbnail, {
-          folder: "courses",
+          folder: 'courses',
         });
 
         data.thumbnail = {
@@ -32,7 +32,7 @@ export const uploadCourse = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // edit course
@@ -45,13 +45,13 @@ export const editCourse = CatchAsyncError(
 
       const courseId = req.params.id;
 
-      const courseData = await CourseModel.findById(courseId) as any;
+      const courseData = (await CourseModel.findById(courseId)) as any;
 
-      if (thumbnail && !thumbnail.startsWith("https")) {
+      if (thumbnail && !thumbnail.startsWith('https')) {
         await cloudinary.v2.uploader.destroy(courseData.thumbnail.public_id);
 
         const myCloud = await cloudinary.v2.uploader.upload(thumbnail, {
-          folder: "courses",
+          folder: 'courses',
         });
 
         data.thumbnail = {
@@ -60,7 +60,7 @@ export const editCourse = CatchAsyncError(
         };
       }
 
-      if (thumbnail.startsWith("https")) {
+      if (thumbnail.startsWith('https')) {
         data.thumbnail = {
           public_id: courseData?.thumbnail.public_id,
           url: courseData?.thumbnail.url,
@@ -72,7 +72,7 @@ export const editCourse = CatchAsyncError(
         {
           $set: data,
         },
-        { new: true }
+        { new: true },
       );
       await redis.set(courseId, JSON.stringify(course)); // update course in redis
       res.status(201).json({
@@ -82,7 +82,7 @@ export const editCourse = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // get single course --- without purchasing
@@ -101,10 +101,10 @@ export const getSingleCourse = CatchAsyncError(
         });
       } else {
         const course = await CourseModel.findById(req.params.id).select(
-          "-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links"
+          '-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links',
         );
 
-        await redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7days
+        await redis.set(courseId, JSON.stringify(course), 'EX', 604800); // 7days
 
         res.status(200).json({
           success: true,
@@ -114,7 +114,7 @@ export const getSingleCourse = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // get all courses --- without purchasing
@@ -122,7 +122,7 @@ export const getAllCourses = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const courses = await CourseModel.find().select(
-        "-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links"
+        '-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links',
       );
 
       res.status(200).json({
@@ -132,7 +132,7 @@ export const getAllCourses = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // get course content -- only for valid user
@@ -143,12 +143,12 @@ export const getCourseByUser = CatchAsyncError(
       const courseId = req.params.id;
 
       const courseExists = userCourseList?.find(
-        (course: any) => course._id.toString() === courseId
+        (course: any) => course._id.toString() === courseId,
       );
 
       if (!courseExists) {
         return next(
-          new ErrorHandler("You are not eligible to access this course", 404)
+          new ErrorHandler('You are not eligible to access this course', 404),
         );
       }
 
@@ -163,7 +163,7 @@ export const getCourseByUser = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // add question in course
@@ -180,15 +180,15 @@ export const addQuestion = CatchAsyncError(
       const course = await CourseModel.findById(courseId);
 
       if (!mongoose.Types.ObjectId.isValid(contentId)) {
-        return next(new ErrorHandler("Invalid content id", 400));
+        return next(new ErrorHandler('Invalid content id', 400));
       }
 
       const couseContent = course?.courseData?.find((item: any) =>
-        item._id.equals(contentId)
+        item._id.equals(contentId),
       );
 
       if (!couseContent) {
-        return next(new ErrorHandler("Invalid content id", 400));
+        return next(new ErrorHandler('Invalid content id', 400));
       }
 
       // create a new question object
@@ -203,7 +203,7 @@ export const addQuestion = CatchAsyncError(
 
       await NotificationModel.create({
         user: req.user?._id,
-        title: "New Question Received",
+        title: 'New Question Received',
         message: `You have a new question in ${couseContent.title}`,
       });
 
@@ -217,7 +217,7 @@ export const addQuestion = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // add answer in course question
@@ -237,23 +237,23 @@ export const addAnwser = CatchAsyncError(
       const course = await CourseModel.findById(courseId);
 
       if (!mongoose.Types.ObjectId.isValid(contentId)) {
-        return next(new ErrorHandler("Invalid content id", 400));
+        return next(new ErrorHandler('Invalid content id', 400));
       }
 
       const couseContent = course?.courseData?.find((item: any) =>
-        item._id.equals(contentId)
+        item._id.equals(contentId),
       );
 
       if (!couseContent) {
-        return next(new ErrorHandler("Invalid content id", 400));
+        return next(new ErrorHandler('Invalid content id', 400));
       }
 
       const question = couseContent?.questions?.find((item: any) =>
-        item._id.equals(questionId)
+        item._id.equals(questionId),
       );
 
       if (!question) {
-        return next(new ErrorHandler("Invalid question id", 400));
+        return next(new ErrorHandler('Invalid question id', 400));
       }
 
       // create a new answer object
@@ -273,7 +273,7 @@ export const addAnwser = CatchAsyncError(
         // create a notification
         await NotificationModel.create({
           user: req.user?._id,
-          title: "New Question Reply Received",
+          title: 'New Question Reply Received',
           message: `You have a new question reply in ${couseContent.title}`,
         });
       } else {
@@ -283,15 +283,15 @@ export const addAnwser = CatchAsyncError(
         };
 
         const html = await ejs.renderFile(
-          path.join(__dirname, "../mails/question-reply.ejs"),
-          data
+          path.join(__dirname, '../mails/question-reply.ejs'),
+          data,
         );
 
         try {
           await sendMail({
             email: question.user.email,
-            subject: "Question Reply",
-            template: "question-reply.ejs",
+            subject: 'Question Reply',
+            template: 'question-reply.ejs',
             data,
           });
         } catch (error: any) {
@@ -306,7 +306,7 @@ export const addAnwser = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // add review in course
@@ -325,12 +325,12 @@ export const addReview = CatchAsyncError(
 
       // check if courseId already exists in userCourseList based on _id
       const courseExists = userCourseList?.some(
-        (course: any) => course._id.toString() === courseId.toString()
+        (course: any) => course._id.toString() === courseId.toString(),
       );
 
       if (!courseExists) {
         return next(
-          new ErrorHandler("You are not eligible to access this course", 404)
+          new ErrorHandler('You are not eligible to access this course', 404),
         );
       }
 
@@ -358,15 +358,14 @@ export const addReview = CatchAsyncError(
 
       await course?.save();
 
-      await redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7days
+      await redis.set(courseId, JSON.stringify(course), 'EX', 604800); // 7days
 
       // create notification
       await NotificationModel.create({
         user: req.user?._id,
-        title: "New Review Received",
+        title: 'New Review Received',
         message: `${req.user?.name} has given a review in ${course?.name}`,
       });
-
 
       res.status(200).json({
         success: true,
@@ -375,7 +374,7 @@ export const addReview = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // add reply in review
@@ -392,15 +391,15 @@ export const addReplyToReview = CatchAsyncError(
       const course = await CourseModel.findById(courseId);
 
       if (!course) {
-        return next(new ErrorHandler("Course not found", 404));
+        return next(new ErrorHandler('Course not found', 404));
       }
 
       const review = course?.reviews?.find(
-        (rev: any) => rev._id.toString() === reviewId
+        (rev: any) => rev._id.toString() === reviewId,
       );
 
       if (!review) {
-        return next(new ErrorHandler("Review not found", 404));
+        return next(new ErrorHandler('Review not found', 404));
       }
 
       const replyData: any = {
@@ -418,7 +417,7 @@ export const addReplyToReview = CatchAsyncError(
 
       await course?.save();
 
-      await redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7days
+      await redis.set(courseId, JSON.stringify(course), 'EX', 604800); // 7days
 
       res.status(200).json({
         success: true,
@@ -427,7 +426,7 @@ export const addReplyToReview = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // get all courses --- only for admin
@@ -438,7 +437,7 @@ export const getAdminAllCourses = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );
 
 // Delete Course --- only for admin
@@ -450,7 +449,7 @@ export const deleteCourse = CatchAsyncError(
       const course = await CourseModel.findById(id);
 
       if (!course) {
-        return next(new ErrorHandler("course not found", 404));
+        return next(new ErrorHandler('course not found', 404));
       }
 
       await course.deleteOne({ id });
@@ -459,12 +458,12 @@ export const deleteCourse = CatchAsyncError(
 
       res.status(200).json({
         success: true,
-        message: "course deleted successfully",
+        message: 'course deleted successfully',
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );
 
 // generate video url
@@ -477,15 +476,15 @@ export const generateVideoUrl = CatchAsyncError(
         { ttl: 300 },
         {
           headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
             Authorization: `Apisecret ${process.env.VDOCIPHER_API_SECRET}`,
           },
-        }
+        },
       );
       res.json(response.data);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );

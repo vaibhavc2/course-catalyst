@@ -1,19 +1,19 @@
-import { styles } from "@/app/styles/style";
-import { useActivationMutation } from "@/redux/features/auth/authApi";
-import React, { FC, useEffect, useRef, useState } from "react";
-import { toast } from "react-hot-toast";
-import { VscWorkspaceTrusted } from "react-icons/vsc";
-import { useSelector } from "react-redux";
+import { styles } from '@/app/styles/style';
+import { useActivationMutation } from '@/redux/features/auth/authApi';
+import React, { FC, useEffect, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { VscWorkspaceTrusted } from 'react-icons/vsc';
+import { useSelector } from 'react-redux';
 
 type Props = {
   setRoute: (route: string) => void;
 };
 
 type VerifyNumber = {
-  "0": string;
-  "1": string;
-  "2": string;
-  "3": string;
+  '0': string;
+  '1': string;
+  '2': string;
+  '3': string;
 };
 
 const Verification: FC<Props> = ({ setRoute }) => {
@@ -23,16 +23,16 @@ const Verification: FC<Props> = ({ setRoute }) => {
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Account activated successfully");
-      setRoute("Login");
+      toast.success('Account activated successfully');
+      setRoute('Login');
     }
     if (error) {
-      if ("data" in error) {
+      if ('data' in error) {
         const errorData = error as any;
         toast.error(errorData.data.message);
         setInvalidError(true);
       } else {
-        console.log("An error occured:", error);
+        console.log('An error occured:', error);
       }
     }
   }, [isSuccess, error]);
@@ -45,14 +45,14 @@ const Verification: FC<Props> = ({ setRoute }) => {
   ];
 
   const [verifyNumber, setVerifyNumber] = useState<VerifyNumber>({
-    0: "",
-    1: "",
-    2: "",
-    3: "",
+    0: '',
+    1: '',
+    2: '',
+    3: '',
   });
 
   const verificationHandler = async () => {
-    const verificationNumber = Object.values(verifyNumber).join("");
+    const verificationNumber = Object.values(verifyNumber).join('');
     if (verificationNumber.length !== 4) {
       setInvalidError(true);
       return;
@@ -68,7 +68,7 @@ const Verification: FC<Props> = ({ setRoute }) => {
     const newVerifyNumber = { ...verifyNumber, [index]: value };
     setVerifyNumber(newVerifyNumber);
 
-    if (value === "" && index > 0) {
+    if (value === '' && index > 0) {
       inputRefs[index - 1].current?.focus();
     } else if (value.length === 1 && index < 3) {
       inputRefs[index + 1].current?.focus();
@@ -94,8 +94,8 @@ const Verification: FC<Props> = ({ setRoute }) => {
             ref={inputRefs[index]}
             className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-[10px] flex items-center text-black dark:text-white justify-center text-[18px] font-Poppins outline-none text-center ${
               invalidError
-                ? "shake border-red-500"
-                : "dark:border-white border-[#0000004a]"
+                ? 'shake border-red-500'
+                : 'dark:border-white border-[#0000004a]'
             }`}
             placeholder=""
             maxLength={1}
@@ -113,10 +113,10 @@ const Verification: FC<Props> = ({ setRoute }) => {
       </div>
       <br />
       <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
-        Go back to sign in?{" "}
+        Go back to sign in?{' '}
         <span
           className="text-[#2190ff] pl-1 cursor-pointer"
-          onClick={() => setRoute("Login")}
+          onClick={() => setRoute('Login')}
         >
           Sign in
         </span>

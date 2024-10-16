@@ -1,4 +1,4 @@
-import { Document, Model } from "mongoose";
+import { Document, Model } from 'mongoose';
 
 interface MonthData {
   month: string;
@@ -6,7 +6,7 @@ interface MonthData {
 }
 
 export async function generateLast12MothsData<T extends Document>(
-  model: Model<T>
+  model: Model<T>,
 ): Promise<{ last12Months: MonthData[] }> {
   const last12Months: MonthData[] = [];
   const currentDate = new Date();
@@ -16,18 +16,18 @@ export async function generateLast12MothsData<T extends Document>(
     const endDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
-      currentDate.getDate() - i * 28
+      currentDate.getDate() - i * 28,
     );
     const startDate = new Date(
       endDate.getFullYear(),
       endDate.getMonth(),
-      endDate.getDate() - 28
+      endDate.getDate() - 28,
     );
 
-    const monthYear = endDate.toLocaleString("default", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
+    const monthYear = endDate.toLocaleString('default', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     });
     const count = await model.countDocuments({
       createdAt: {

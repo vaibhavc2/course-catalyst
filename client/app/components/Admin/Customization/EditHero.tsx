@@ -1,20 +1,20 @@
-import { styles } from "@/app/styles/style";
+import { styles } from '@/app/styles/style';
 import {
   useEditLayoutMutation,
   useGetHeroDataQuery,
-} from "@/redux/features/layout/layoutApi";
-import React, { FC, useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
-import { AiOutlineCamera } from "react-icons/ai";
+} from '@/redux/features/layout/layoutApi';
+import React, { FC, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { AiOutlineCamera } from 'react-icons/ai';
 
 type Props = {};
 
 const EditHero: FC<Props> = (props: Props) => {
-  const [image, setImage] = useState("");
-  const [title, setTitle] = useState("");
-  const [subTitle, setSubTitle] = useState("");
-  const { data,refetch } = useGetHeroDataQuery("Banner", {
-    refetchOnMountOrArgChange: true
+  const [image, setImage] = useState('');
+  const [title, setTitle] = useState('');
+  const [subTitle, setSubTitle] = useState('');
+  const { data, refetch } = useGetHeroDataQuery('Banner', {
+    refetchOnMountOrArgChange: true,
   });
   const [editLayout, { isLoading, isSuccess, error }] = useEditLayoutMutation();
 
@@ -25,11 +25,11 @@ const EditHero: FC<Props> = (props: Props) => {
       setImage(data?.layout?.banner?.image?.url);
     }
     if (isSuccess) {
-      toast.success("Hero updated successfully!");
+      toast.success('Hero updated successfully!');
       refetch();
     }
     if (error) {
-      if ("data" in error) {
+      if ('data' in error) {
         const errorData = error as any;
         toast.error(errorData?.data?.message);
       }
@@ -51,7 +51,7 @@ const EditHero: FC<Props> = (props: Props) => {
 
   const handleEdit = async () => {
     await editLayout({
-      type: "Banner",
+      type: 'Banner',
       image,
       title,
       subTitle,
@@ -108,8 +108,8 @@ const EditHero: FC<Props> = (props: Props) => {
             data?.layout?.banner?.title !== title ||
             data?.layout?.banner?.subTitle !== subTitle ||
             data?.layout?.banner?.image?.url !== image
-              ? "!cursor-pointer !bg-[#42d383]"
-              : "!cursor-not-allowed"
+              ? '!cursor-pointer !bg-[#42d383]'
+              : '!cursor-not-allowed'
           }
           !rounded absolute bottom-12 right-12`}
             onClick={

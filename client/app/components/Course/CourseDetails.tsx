@@ -1,16 +1,16 @@
-import { styles } from "@/app/styles/style";
-import CoursePlayer from "@/app/utils/CoursePlayer";
-import Ratings from "@/app/utils/Ratings";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { IoCheckmarkDoneOutline, IoCloseOutline } from "react-icons/io5";
-import { format } from "timeago.js";
-import CourseContentList from "../Course/CourseContentList";
-import { Elements } from "@stripe/react-stripe-js";
-import CheckOutForm from "../Payment/CheckOutForm";
-import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
-import Image from "next/image";
-import { VscVerifiedFilled } from "react-icons/vsc";
+import { styles } from '@/app/styles/style';
+import CoursePlayer from '@/app/utils/CoursePlayer';
+import Ratings from '@/app/utils/Ratings';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { IoCheckmarkDoneOutline, IoCloseOutline } from 'react-icons/io5';
+import { format } from 'timeago.js';
+import CourseContentList from '../Course/CourseContentList';
+import { Elements } from '@stripe/react-stripe-js';
+import CheckOutForm from '../Payment/CheckOutForm';
+import { useLoadUserQuery } from '@/redux/features/api/apiSlice';
+import Image from 'next/image';
+import { VscVerifiedFilled } from 'react-icons/vsc';
 
 type Props = {
   data: any;
@@ -27,7 +27,7 @@ const CourseDetails = ({
   setRoute,
   setOpen: openAuthModal,
 }: Props) => {
-  const { data: userData,refetch } = useLoadUserQuery(undefined, {});
+  const { data: userData, refetch } = useLoadUserQuery(undefined, {});
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
 
@@ -47,7 +47,7 @@ const CourseDetails = ({
     if (user) {
       setOpen(true);
     } else {
-      setRoute("Login");
+      setRoute('Login');
       openAuthModal(true);
     }
   };
@@ -138,7 +138,7 @@ const CourseDetails = ({
                 <h5 className="text-[25px] font-Poppins text-black dark:text-white">
                   {Number.isInteger(data?.ratings)
                     ? data?.ratings.toFixed(1)
-                    : data?.ratings.toFixed(2)}{" "}
+                    : data?.ratings.toFixed(2)}{' '}
                   Course Rating • {data?.reviews?.length} Reviews
                 </h5>
               </div>
@@ -152,7 +152,7 @@ const CourseDetails = ({
                           src={
                             item.user.avatar
                               ? item.user.avatar.url
-                              : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                              : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                           }
                           width={50}
                           height={50}
@@ -188,7 +188,7 @@ const CourseDetails = ({
                             src={
                               i.user.avatar
                                 ? i.user.avatar.url
-                                : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                                : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                             }
                             width={50}
                             height={50}
@@ -198,7 +198,7 @@ const CourseDetails = ({
                         </div>
                         <div className="pl-2">
                           <div className="flex items-center">
-                            <h5 className="text-[20px]">{i.user.name}</h5>{" "}
+                            <h5 className="text-[20px]">{i.user.name}</h5>{' '}
                             <VscVerifiedFilled className="text-[#0095F6] ml-2 text-[20px]" />
                           </div>
                           <p>{i.comment}</p>
@@ -209,7 +209,7 @@ const CourseDetails = ({
                       </div>
                     ))}
                   </div>
-                )
+                ),
               )}
             </div>
           </div>
@@ -218,7 +218,7 @@ const CourseDetails = ({
               <CoursePlayer videoUrl={data?.demoUrl} title={data?.title} />
               <div className="flex items-center">
                 <h1 className="pt-5 text-[25px] text-black dark:text-white">
-                  {data.price === 0 ? "Free" : data.price + "$"}
+                  {data.price === 0 ? 'Free' : data.price + '$'}
                 </h1>
                 <h5 className="pl-3 text-[20px] mt-2 line-through opacity-80 text-black dark:text-white">
                   {data.estimatedPrice}$
@@ -276,7 +276,12 @@ const CourseDetails = ({
               <div className="w-full">
                 {stripePromise && clientSecret && (
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <CheckOutForm setOpen={setOpen} data={data} user={user} refetch={refetch} />
+                    <CheckOutForm
+                      setOpen={setOpen}
+                      data={data}
+                      user={user}
+                      refetch={refetch}
+                    />
                   </Elements>
                 )}
               </div>

@@ -1,7 +1,7 @@
-"use client";
-import { configureStore } from "@reduxjs/toolkit";
-import { apiSlice } from "./api/apiSlice";
-import authSlice from "./auth/authSlice";
+'use client';
+import { configureStore } from '@reduxjs/toolkit';
+import { apiSlice } from './api/apiSlice';
+import authSlice from './auth/authSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,7 +16,7 @@ export const store = configureStore({
 // call the load user function on every page load
 const initializeApp = async () => {
   await store.dispatch(
-    apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
+    apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true }),
   );
 };
 

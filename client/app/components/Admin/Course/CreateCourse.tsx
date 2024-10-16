@@ -1,13 +1,13 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import CourseInformation from "./CourseInformation";
-import CourseOptions from "./CourseOptions";
-import CourseData from "./CourseData";
-import CourseContent from "./CourseContent";
-import CoursePreview from "./CoursePreview";
-import { useCreateCourseMutation } from "../../../../redux/features/courses/coursesApi";
-import { toast } from "react-hot-toast";
-import { redirect } from "next/navigation";
+'use client';
+import React, { useEffect, useState } from 'react';
+import CourseInformation from './CourseInformation';
+import CourseOptions from './CourseOptions';
+import CourseData from './CourseData';
+import CourseContent from './CourseContent';
+import CoursePreview from './CoursePreview';
+import { useCreateCourseMutation } from '../../../../redux/features/courses/coursesApi';
+import { toast } from 'react-hot-toast';
+import { redirect } from 'next/navigation';
 
 type Props = {};
 
@@ -17,11 +17,11 @@ const CreateCourse = (props: Props) => {
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Course created successfully");
-      redirect("/admin/courses");
+      toast.success('Course created successfully');
+      redirect('/admin/courses');
     }
     if (error) {
-      if ("data" in error) {
+      if ('data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       }
@@ -30,38 +30,36 @@ const CreateCourse = (props: Props) => {
 
   const [active, setActive] = useState(0);
   const [courseInfo, setCourseInfo] = useState({
-    name: "",
-    description: "",
-    price: "",
-    estimatedPrice: "",
-    tags: "",
-    level: "",
-    categories:"",
-    demoUrl: "",
-    thumbnail: "",
+    name: '',
+    description: '',
+    price: '',
+    estimatedPrice: '',
+    tags: '',
+    level: '',
+    categories: '',
+    demoUrl: '',
+    thumbnail: '',
   });
-  const [benefits, setBenefits] = useState([{ title: "" }]);
-  const [prerequisites, setPrerequisites] = useState([{ title: "" }]);
+  const [benefits, setBenefits] = useState([{ title: '' }]);
+  const [prerequisites, setPrerequisites] = useState([{ title: '' }]);
   const [courseContentData, setCourseContentData] = useState([
     {
-      videoUrl: "",
-      title: "",
-      description: "",
-      videoSection: "Untitled Section",
-      videoLength: "",
+      videoUrl: '',
+      title: '',
+      description: '',
+      videoSection: 'Untitled Section',
+      videoLength: '',
       links: [
         {
-          title: "",
-          url: "",
+          title: '',
+          url: '',
         },
       ],
-      suggestion: "",
+      suggestion: '',
     },
   ]);
 
-
   const [courseData, setCourseData] = useState({});
-
 
   const handleSubmit = async () => {
     // Format benefits array
@@ -86,7 +84,7 @@ const CreateCourse = (props: Props) => {
           url: link.url,
         })),
         suggestion: courseContent.suggestion,
-      })
+      }),
     );
 
     //   prepare our data object

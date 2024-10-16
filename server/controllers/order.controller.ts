@@ -1,17 +1,17 @@
-import { NextFunction, Request, Response } from "express";
-import { CatchAsyncError } from "../middleware/catchAsyncErrors";
-import ErrorHandler from "../utils/ErrorHandler";
-import { IOrder } from "../models/order.Model";
-import userModel from "../models/user.model";
-import CourseModel, { ICourse } from "../models/course.model";
-import path from "path";
-import ejs from "ejs";
-import sendMail from "../utils/sendMail";
-import NotificationModel from "../models/notification.Model";
-import { getAllOrdersService, newOrder } from "../services/order.service";
-import { redis } from "../utils/redis";
-require("dotenv").config();
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+import { NextFunction, Request, Response } from 'express';
+import { CatchAsyncError } from '../middleware/catchAsyncErrors';
+import ErrorHandler from '../utils/ErrorHandler';
+import { IOrder } from '../models/order.Model';
+import userModel from '../models/user.model';
+import CourseModel, { ICourse } from '../models/course.model';
+import path from 'path';
+import ejs from 'ejs';
+import sendMail from '../utils/sendMail';
+import NotificationModel from '../models/notification.Model';
+import { getAllOrdersService, newOrder } from '../services/order.service';
+import { redis } from '../utils/redis';
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // create order
 export const createOrder = CatchAsyncError(
@@ -20,14 +20,13 @@ export const createOrder = CatchAsyncError(
       const { courseId, payment_info } = req.body as IOrder;
 
       if (payment_info) {
-        if ("id" in payment_info) {
+        if ('id' in payment_info) {
           const paymentIntentId = payment_info.id;
-          const paymentIntent = await stripe.paymentIntents.retrieve(
-            paymentIntentId
-          );
+          const paymentIntent =
+            await stripe.paymentIntents.retrieve(paymentIntentId);
 
-          if (paymentIntent.status !== "succeeded") {
-            return next(new ErrorHandler("Payment not authorized!", 400));
+          if (paymentIntent.status !== 'succeeded') {
+            return next(new ErrorHandler('Payment not authorized!', 400));
           }
         }
       }
@@ -35,19 +34,19 @@ export const createOrder = CatchAsyncError(
       const user = await userModel.findById(req.user?._id);
 
       const courseExistInUser = user?.courses.some(
-        (course: any) => course._id.toString() === courseId
+        (course: any) => course._id.toString() === courseId,
       );
 
       if (courseExistInUser) {
         return next(
-          new ErrorHandler("You have already purchased this course", 400)
+          new ErrorHandler('You have already purchased this course', 400),
         );
       }
 
       const course: ICourse | null = await CourseModel.findById(courseId);
 
       if (!course) {
-        return next(new ErrorHandler("Course not found", 404));
+        return next(new ErrorHandler('Course not found', 404));
       }
 
       const data: any = {
@@ -61,25 +60,25 @@ export const createOrder = CatchAsyncError(
           _id: course._id.toString().slice(0, 6),
           name: course.name,
           price: course.price,
-          date: new Date().toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
+          date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
           }),
         },
       };
 
       const html = await ejs.renderFile(
-        path.join(__dirname, "../mails/order-confirmation.ejs"),
-        { order: mailData }
+        path.join(__dirname, '../mails/order-confirmation.ejs'),
+        { order: mailData },
       );
 
       try {
         if (user) {
           await sendMail({
             email: user.email,
-            subject: "Order Confirmation",
-            template: "order-confirmation.ejs",
+            subject: 'Order Confirmation',
+            template: 'order-confirmation.ejs',
             data: mailData,
           });
         }
@@ -95,7 +94,7 @@ export const createOrder = CatchAsyncError(
 
       await NotificationModel.create({
         user: user?._id,
-        title: "New Order",
+        title: 'New Order',
         message: `You have a new order from ${course?.name}`,
       });
 
@@ -107,7 +106,7 @@ export const createOrder = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 // get All orders --- only for admin
@@ -118,7 +117,7 @@ export const getAllOrders = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );
 
 //  send stripe publishble key
@@ -127,7 +126,7 @@ export const sendStripePublishableKey = CatchAsyncError(
     res.status(200).json({
       publishablekey: process.env.STRIPE_PUBLISHABLE_KEY,
     });
-  }
+  },
 );
 
 // new payment
@@ -136,22 +135,22 @@ export const newPayment = CatchAsyncError(
     try {
       const myPayment = await stripe.paymentIntents.create({
         amount: req.body.amount,
-        currency: "USD",
-        description: "E-learning course services",
+        currency: 'USD',
+        description: 'E-learning course services',
         metadata: {
-          company: "E-Learning",
+          company: 'E-Learning',
         },
         automatic_payment_methods: {
           enabled: true,
         },
         shipping: {
-          name: "Harmik Lathiya",
+          name: 'Harmik Lathiya',
           address: {
-            line1: "510 Townsend St",
-            postal_code: "98140",
-            city: "San Francisco",
-            state: "CA",
-            country: "US",
+            line1: '510 Townsend St',
+            postal_code: '98140',
+            city: 'San Francisco',
+            state: 'CA',
+            country: 'US',
           },
         },
       });
@@ -162,5 +161,5 @@ export const newPayment = CatchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
-  }
+  },
 );

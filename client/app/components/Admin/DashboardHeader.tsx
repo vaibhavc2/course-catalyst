@@ -1,15 +1,15 @@
-"use client";
-import { ThemeSwitcher } from "@/app/utils/ThemeSwitcher";
+'use client';
+import { ThemeSwitcher } from '@/app/utils/ThemeSwitcher';
 import {
   useGetAllNotificationsQuery,
   useUpdateNotificationStatusMutation,
-} from "@/redux/features/notifications/notificationsApi";
-import React, { FC, useEffect, useState } from "react";
-import { IoMdNotificationsOutline } from "react-icons/io";
-import socketIO from "socket.io-client";
-import { format } from "timeago.js";
-const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+} from '@/redux/features/notifications/notificationsApi';
+import React, { FC, useEffect, useState } from 'react';
+import { IoMdNotificationsOutline } from 'react-icons/io';
+import socketIO from 'socket.io-client';
+import { format } from 'timeago.js';
+const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || '';
+const socketId = socketIO(ENDPOINT, { transports: ['websocket'] });
 
 type Props = {
   open?: boolean;
@@ -24,10 +24,10 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
     useUpdateNotificationStatusMutation();
   const [notifications, setNotifications] = useState<any>([]);
   const [audio] = useState<any>(
-    typeof window !== "undefined" &&
+    typeof window !== 'undefined' &&
       new Audio(
-        "https://res.cloudinary.com/damk25wo5/video/upload/v1693465789/notification_vcetjn.mp3"
-      )
+        'https://res.cloudinary.com/damk25wo5/video/upload/v1693465789/notification_vcetjn.mp3',
+      ),
   );
 
   const playNotificationSound = () => {
@@ -37,17 +37,17 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
   useEffect(() => {
     if (data) {
       setNotifications(
-        data.notifications.filter((item: any) => item.status === "unread")
+        data.notifications.filter((item: any) => item.status === 'unread'),
       );
     }
     if (isSuccess) {
       refetch();
     }
     audio.load();
-  }, [data, isSuccess,audio]);
+  }, [data, isSuccess, audio]);
 
   useEffect(() => {
-    socketId.on("newNotification", (data) => {
+    socketId.on('newNotification', (data) => {
       refetch();
       playNotificationSound();
     });

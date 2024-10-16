@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   BarChart,
   Bar,
@@ -7,10 +7,10 @@ import {
   Label,
   YAxis,
   LabelList,
-} from "recharts";
-import Loader from "../../Loader/Loader";
-import { useGetCoursesAnalyticsQuery } from "@/redux/features/analytics/analyticsApi";
-import { styles } from "@/app/styles/style";
+} from 'recharts';
+import Loader from '../../Loader/Loader';
+import { useGetCoursesAnalyticsQuery } from '@/redux/features/analytics/analyticsApi';
+import { styles } from '@/app/styles/style';
 
 type Props = {};
 
@@ -47,7 +47,7 @@ const CourseAnalytics = (props: Props) => {
               Courses Analytics
             </h1>
             <p className={`${styles.label} px-5`}>
-              Last 12 months analytics data{" "}
+              Last 12 months analytics data{' '}
             </p>
           </div>
 
@@ -57,7 +57,7 @@ const CourseAnalytics = (props: Props) => {
                 <XAxis dataKey="name">
                   <Label offset={0} position="insideBottom" />
                 </XAxis>
-                <YAxis domain={[minValue, "auto"]} />
+                <YAxis domain={[minValue, 'auto']} />
                 <Bar dataKey="uv" fill="#3faf82">
                   <LabelList dataKey="uv" position="top" />
                 </Bar>

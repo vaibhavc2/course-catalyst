@@ -1,14 +1,14 @@
-import Image from "next/image";
-import { styles } from "../../../app/styles/style";
-import React, { FC, useEffect, useState } from "react";
-import { AiOutlineCamera } from "react-icons/ai";
-import avatarIcon from "../../../public/assests/avatar.png";
+import Image from 'next/image';
+import { styles } from '../../../app/styles/style';
+import React, { FC, useEffect, useState } from 'react';
+import { AiOutlineCamera } from 'react-icons/ai';
+import avatarIcon from '../../../public/assests/avatar.png';
 import {
   useEditProfileMutation,
   useUpdateAvatarMutation,
-} from "@/redux/features/user/userApi";
-import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
-import { toast } from "react-hot-toast";
+} from '@/redux/features/user/userApi';
+import { useLoadUserQuery } from '@/redux/features/api/apiSlice';
+import { toast } from 'react-hot-toast';
 
 type Props = {
   avatar: string | null;
@@ -42,15 +42,15 @@ const ProfileInfo: FC<Props> = ({ avatar, user }) => {
     if (error || updateError) {
       console.log(error);
     }
-    if(success){
-      toast.success("Profile updated successfully!");
+    if (success) {
+      toast.success('Profile updated successfully!');
       setLoadUser(true);
     }
-  }, [isSuccess, error,success, updateError]);
+  }, [isSuccess, error, success, updateError]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (name !== "") {
+    if (name !== '') {
       await editProfile({
         name: name,
       });

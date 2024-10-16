@@ -1,28 +1,28 @@
-import { styles } from "@/app/styles/style";
-import CoursePlayer from "@/app/utils/CoursePlayer";
+import { styles } from '@/app/styles/style';
+import CoursePlayer from '@/app/utils/CoursePlayer';
 import {
   useAddAnswerInQuestionMutation,
   useAddNewQuestionMutation,
   useAddReplyInReviewMutation,
   useAddReviewInCourseMutation,
   useGetCourseDetailsQuery,
-} from "@/redux/features/courses/coursesApi";
-import Image from "next/image";
-import { format } from "timeago.js";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
+} from '@/redux/features/courses/coursesApi';
+import Image from 'next/image';
+import { format } from 'timeago.js';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import {
   AiFillStar,
   AiOutlineArrowLeft,
   AiOutlineArrowRight,
   AiOutlineStar,
-} from "react-icons/ai";
-import { BiMessage } from "react-icons/bi";
-import { VscVerifiedFilled } from "react-icons/vsc";
-import Ratings from "@/app/utils/Ratings";
-import socketIO from "socket.io-client";
-const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+} from 'react-icons/ai';
+import { BiMessage } from 'react-icons/bi';
+import { VscVerifiedFilled } from 'react-icons/vsc';
+import Ratings from '@/app/utils/Ratings';
+import socketIO from 'socket.io-client';
+const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || '';
+const socketId = socketIO(ENDPOINT, { transports: ['websocket'] });
 
 type Props = {
   data: any;
@@ -42,13 +42,13 @@ const CourseContentMedia = ({
   refetch,
 }: Props) => {
   const [activeBar, setactiveBar] = useState(0);
-  const [question, setQuestion] = useState("");
-  const [review, setReview] = useState("");
+  const [question, setQuestion] = useState('');
+  const [review, setReview] = useState('');
   const [rating, setRating] = useState(1);
-  const [answer, setAnswer] = useState("");
-  const [questionId, setQuestionId] = useState("");
-  const [reply, setReply] = useState("");
-  const [reviewId, setReviewId] = useState("");
+  const [answer, setAnswer] = useState('');
+  const [questionId, setQuestionId] = useState('');
+  const [reply, setReply] = useState('');
+  const [reviewId, setReviewId] = useState('');
   const [isReviewReply, setIsReviewReply] = useState(false);
 
   const [
@@ -57,7 +57,7 @@ const CourseContentMedia = ({
   ] = useAddNewQuestionMutation();
   const { data: courseData, refetch: courseRefetch } = useGetCourseDetailsQuery(
     id,
-    { refetchOnMountOrArgChange: true }
+    { refetchOnMountOrArgChange: true },
   );
   const [
     addAnswerInQuestion,
@@ -87,7 +87,7 @@ const CourseContentMedia = ({
   ] = useAddReplyInReviewMutation();
 
   const isReviewExists = course?.reviews?.find(
-    (item: any) => item.user._id === user._id
+    (item: any) => item.user._id === user._id,
   );
 
   const handleQuestion = () => {
@@ -104,19 +104,19 @@ const CourseContentMedia = ({
 
   useEffect(() => {
     if (isSuccess) {
-      setQuestion("");
+      setQuestion('');
       refetch();
-      socketId.emit("notification", {
+      socketId.emit('notification', {
         title: `New Question Received`,
         message: `You have a new question in ${data[activeVideo].title}`,
         userId: user._id,
       });
     }
     if (answerSuccess) {
-      setAnswer("");
+      setAnswer('');
       refetch();
-      if (user.role !== "admin") {
-        socketId.emit("notification", {
+      if (user.role !== 'admin') {
+        socketId.emit('notification', {
           title: `New Reply Received`,
           message: `You have a new question in ${data[activeVideo].title}`,
           userId: user._id,
@@ -124,39 +124,39 @@ const CourseContentMedia = ({
       }
     }
     if (error) {
-      if ("data" in error) {
+      if ('data' in error) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       }
     }
     if (answerError) {
-      if ("data" in answerError) {
+      if ('data' in answerError) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       }
     }
     if (reviewSuccess) {
-      setReview("");
+      setReview('');
       setRating(1);
       courseRefetch();
-      socketId.emit("notification", {
+      socketId.emit('notification', {
         title: `New Question Received`,
         message: `You have a new question in ${data[activeVideo].title}`,
         userId: user._id,
       });
     }
     if (reviewError) {
-      if ("data" in reviewError) {
+      if ('data' in reviewError) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       }
     }
     if (replySuccess) {
-      setReply("");
+      setReply('');
       courseRefetch();
     }
     if (replyError) {
-      if ("data" in replyError) {
+      if ('data' in replyError) {
         const errorMessage = error as any;
         toast.error(errorMessage.data.message);
       }
@@ -191,7 +191,7 @@ const CourseContentMedia = ({
 
   const handleReviewReplySubmit = () => {
     if (!replyCreationLoading) {
-      if (reply === "") {
+      if (reply === '') {
         toast.error("Reply can't be empty");
       } else {
         addReplyInReview({ comment: reply, courseId: id, reviewId });
@@ -210,7 +210,7 @@ const CourseContentMedia = ({
           className={`${
             styles.button
           } text-white  !w-[unset] !min-h-[40px] !py-[unset] ${
-            activeVideo === 0 && "!cursor-no-drop opacity-[.8]"
+            activeVideo === 0 && '!cursor-no-drop opacity-[.8]'
           }`}
           onClick={() =>
             setActiveVideo(activeVideo === 0 ? 0 : activeVideo - 1)
@@ -223,13 +223,13 @@ const CourseContentMedia = ({
           className={`${
             styles.button
           } !w-[unset] text-white  !min-h-[40px] !py-[unset] ${
-            data.length - 1 === activeVideo && "!cursor-no-drop opacity-[.8]"
+            data.length - 1 === activeVideo && '!cursor-no-drop opacity-[.8]'
           }`}
           onClick={() =>
             setActiveVideo(
               data && data.length - 1 === activeVideo
                 ? activeVideo
-                : activeVideo + 1
+                : activeVideo + 1,
             )
           }
         >
@@ -242,13 +242,13 @@ const CourseContentMedia = ({
       </h1>
       <br />
       <div className="w-full p-4 flex items-center justify-between bg-slate-500 bg-opacity-20 backdrop-blur shadow-[bg-slate-700] rounded shadow-inner">
-        {["Overview", "Resources", "Q&A", "Reviews"].map((text, index) => (
+        {['Overview', 'Resources', 'Q&A', 'Reviews'].map((text, index) => (
           <h5
             key={index}
             className={`800px:text-[20px] cursor-pointer ${
               activeBar === index
-                ? "text-red-500"
-                : "dark:text-white text-black"
+                ? 'text-red-500'
+                : 'dark:text-white text-black'
             }`}
             onClick={() => setactiveBar(index)}
           >
@@ -268,7 +268,7 @@ const CourseContentMedia = ({
           {data[activeVideo]?.links.map((item: any, index: number) => (
             <div className="mb-5" key={index}>
               <h2 className="800px:text-[20px] 800px:inline-block dark:text-white text-black">
-                {item.title && item.title + " :"}
+                {item.title && item.title + ' :'}
               </h2>
               <a
                 className="inline-block text-[#4395c4] 800px:text-[20px] 800px:pl-2"
@@ -288,7 +288,7 @@ const CourseContentMedia = ({
               src={
                 user.avatar
                   ? user.avatar.url
-                  : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                  : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
               }
               width={50}
               height={50}
@@ -311,7 +311,7 @@ const CourseContentMedia = ({
               className={`${
                 styles.button
               } !w-[120px] !h-[40px] text-[18px] mt-5 ${
-                questionCreationLoading && "cursor-not-allowed"
+                questionCreationLoading && 'cursor-not-allowed'
               }`}
               onClick={questionCreationLoading ? () => {} : handleQuestion}
             >
@@ -347,7 +347,7 @@ const CourseContentMedia = ({
                     src={
                       user.avatar
                         ? user.avatar.url
-                        : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                        : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                     }
                     width={50}
                     height={50}
@@ -376,7 +376,7 @@ const CourseContentMedia = ({
                             size={25}
                             onClick={() => setRating(i)}
                           />
-                        )
+                        ),
                       )}
                     </div>
                     <textarea
@@ -396,7 +396,7 @@ const CourseContentMedia = ({
                     className={`${
                       styles.button
                     } !w-[120px] !h-[40px] text-[18px] mt-5 800px:mr-0 mr-2 ${
-                      reviewCreationLoading && "cursor-no-drop"
+                      reviewCreationLoading && 'cursor-no-drop'
                     }`}
                     onClick={
                       reviewCreationLoading ? () => {} : handleReviewSubmit
@@ -412,16 +412,18 @@ const CourseContentMedia = ({
             <div className="w-full">
               {(course?.reviews && [...course.reviews].reverse())?.map(
                 (item: any, index: number) => {
-                  
                   return (
-                    <div className="w-full my-5 dark:text-white text-black" key={index}>
+                    <div
+                      className="w-full my-5 dark:text-white text-black"
+                      key={index}
+                    >
                       <div className="w-full flex">
                         <div>
                           <Image
                             src={
                               item.user.avatar
                                 ? item.user.avatar.url
-                                : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                                : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                             }
                             width={50}
                             height={50}
@@ -438,17 +440,18 @@ const CourseContentMedia = ({
                           </small>
                         </div>
                       </div>
-                      {user.role === "admin" && item.commentReplies.length === 0 && (
-                        <span
-                          className={`${styles.label} !ml-10 cursor-pointer`}
-                          onClick={() => {
-                            setIsReviewReply(true);
-                            setReviewId(item._id);
-                          }}
-                        >
-                          Add Reply
-                        </span>
-                      )}
+                      {user.role === 'admin' &&
+                        item.commentReplies.length === 0 && (
+                          <span
+                            className={`${styles.label} !ml-10 cursor-pointer`}
+                            onClick={() => {
+                              setIsReviewReply(true);
+                              setReviewId(item._id);
+                            }}
+                          >
+                            Add Reply
+                          </span>
+                        )}
 
                       {isReviewReply && reviewId === item._id && (
                         <div className="w-full flex relative">
@@ -470,13 +473,16 @@ const CourseContentMedia = ({
                       )}
 
                       {item.commentReplies.map((i: any, index: number) => (
-                        <div className="w-full flex 800px:ml-16 my-5" key={index}>
+                        <div
+                          className="w-full flex 800px:ml-16 my-5"
+                          key={index}
+                        >
                           <div className="w-[50px] h-[50px]">
                             <Image
                               src={
                                 i.user.avatar
                                   ? i.user.avatar.url
-                                  : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                                  : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                               }
                               width={50}
                               height={50}
@@ -486,7 +492,7 @@ const CourseContentMedia = ({
                           </div>
                           <div className="pl-2">
                             <div className="flex items-center">
-                              <h5 className="text-[20px]">{i.user.name}</h5>{" "}
+                              <h5 className="text-[20px]">{i.user.name}</h5>{' '}
                               <VscVerifiedFilled className="text-[#0095F6] ml-2 text-[20px]" />
                             </div>
                             <p>{i.comment}</p>
@@ -498,7 +504,7 @@ const CourseContentMedia = ({
                       ))}
                     </div>
                   );
-                }
+                },
               )}
             </div>
           </>
@@ -560,7 +566,7 @@ const CommentItem = ({
               src={
                 item.user.avatar
                   ? item.user.avatar.url
-                  : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                  : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
               }
               width={50}
               height={50}
@@ -572,7 +578,7 @@ const CommentItem = ({
             <h5 className="text-[20px]">{item?.user.name}</h5>
             <p>{item?.question}</p>
             <small className="text-[#000000b8] dark:text-[#ffffff83]">
-              {!item.createdAt ? "" : format(item?.createdAt)} •
+              {!item.createdAt ? '' : format(item?.createdAt)} •
             </small>
           </div>
         </div>
@@ -586,9 +592,9 @@ const CommentItem = ({
           >
             {!replyActive
               ? item.questionReplies.length !== 0
-                ? "All Replies"
-                : "Add Reply"
-              : "Hide Replies"}
+                ? 'All Replies'
+                : 'Add Reply'
+              : 'Hide Replies'}
           </span>
           <BiMessage
             size={20}
@@ -599,16 +605,19 @@ const CommentItem = ({
           </span>
         </div>
 
-        {replyActive && questionId === item._id &&  (
+        {replyActive && questionId === item._id && (
           <>
             {item.questionReplies.map((item: any) => (
-              <div className="w-full flex 800px:ml-16 my-5 text-black dark:text-white" key={item._id}>
+              <div
+                className="w-full flex 800px:ml-16 my-5 text-black dark:text-white"
+                key={item._id}
+              >
                 <div>
                   <Image
                     src={
                       item.user.avatar
                         ? item.user.avatar.url
-                        : "https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png"
+                        : 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png'
                     }
                     width={50}
                     height={50}
@@ -618,8 +627,8 @@ const CommentItem = ({
                 </div>
                 <div className="pl-3">
                   <div className="flex items-center">
-                    <h5 className="text-[20px]">{item.user.name}</h5>{" "}
-                    {item.user.role === "admin" && (
+                    <h5 className="text-[20px]">{item.user.name}</h5>{' '}
+                    {item.user.role === 'admin' && (
                       <VscVerifiedFilled className="text-[#0095F6] ml-2 text-[20px]" />
                     )}
                   </div>
@@ -638,15 +647,15 @@ const CommentItem = ({
                   value={answer}
                   onChange={(e: any) => setAnswer(e.target.value)}
                   className={`block 800px:ml-12 mt-2 outline-none bg-transparent border-b border-[#00000027] dark:text-white text-black dark:border-[#fff] p-[5px] w-[95%] ${
-                    answer === "" ||
-                    (answerCreationLoading && "cursor-not-allowed")
+                    answer === '' ||
+                    (answerCreationLoading && 'cursor-not-allowed')
                   }`}
                 />
                 <button
                   type="submit"
                   className="absolute right-0 bottom-1"
                   onClick={handleAnswerSubmit}
-                  disabled={answer === "" || answerCreationLoading}
+                  disabled={answer === '' || answerCreationLoading}
                 >
                   Submit
                 </button>

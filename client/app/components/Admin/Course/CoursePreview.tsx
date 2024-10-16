@@ -1,8 +1,8 @@
-import React, { FC } from "react";
-import CoursePlayer from "../../../utils/CoursePlayer";
-import { styles } from "../../../../app/styles/style";
-import Ratings from "../../../../app/utils/Ratings";
-import { IoCheckmarkDoneOutline } from "react-icons/io5";
+import React, { FC } from 'react';
+import CoursePlayer from '../../../utils/CoursePlayer';
+import { styles } from '../../../../app/styles/style';
+import Ratings from '../../../../app/utils/Ratings';
+import { IoCheckmarkDoneOutline } from 'react-icons/io5';
 
 type Props = {
   active: number;
@@ -17,7 +17,7 @@ const CoursePreview: FC<Props> = ({
   handleCourseCreate,
   setActive,
   active,
-  isEdit
+  isEdit,
 }) => {
   const dicountPercentenge =
     ((courseData?.estimatedPrice - courseData?.price) /
@@ -45,7 +45,7 @@ const CoursePreview: FC<Props> = ({
         </div>
         <div className="flex items-center">
           <h1 className="pt-5 text-[25px]">
-            {courseData?.price === 0 ? "Free" : courseData?.price + "$"}
+            {courseData?.price === 0 ? 'Free' : courseData?.price + '$'}
           </h1>
           <h5 className="pl-3 text-[20px] mt-2 line-through opacity-80">
             {courseData?.estimatedPrice}$
@@ -146,9 +146,7 @@ const CoursePreview: FC<Props> = ({
           className="w-full 800px:w-[180px] flex items-center justify-center h-[40px] bg-[#37a39a] text-center text-[#fff] rounded mt-8 cursor-pointer"
           onClick={() => createCourse()}
         >
-         {
-          isEdit ? 'Update' : 'Create'
-         }
+          {isEdit ? 'Update' : 'Create'}
         </div>
       </div>
     </div>
