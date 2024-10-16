@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo --port 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -23,13 +23,13 @@
     "autoprefixer": "10.4.14",
     "axios": "^1.4.0",
     "bufferutil": "^4.0.7",
-    "eslint": "8.46.0",
-    "eslint-config-next": "13.4.13",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.2.15",
     "formik": "^2.4.3",
-    "next": "13.4.13",
-    "next-auth": "^4.23.0",
+    "next": "^14.2.15",
+    "next-auth": "^4.24.8",
     "next-themes": "^0.2.1",
-    "postcss": "8.4.27",
+    "postcss": "^8.4.47",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
@@ -44,5 +44,13 @@
     "utf-8-validate": "^6.0.3",
     "ws": "^8.13.0",
     "yup": "^1.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.5",
+    "@types/eslint": "~9.6.1",
+    "@types/utf-8-validate": "~5.0.2",
+    "@types/ws": "~8.5.12",
+    "babel-loader": "^8.2.5"
   }
 }

@@ -1,8 +1,8 @@
-"use client";
-import { FC, useEffect, useState } from "react";
-import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography } from "@mui/material";
-import "react-pro-sidebar/dist/css/styles.css";
+'use client';
+import { FC, useEffect, useState } from 'react';
+import { ProSidebar, Menu, MenuItem } from 'react-pro-sidebar';
+import { Box, IconButton, Typography } from '@mui/material';
+import 'react-pro-sidebar/dist/css/styles.css';
 import {
   HomeOutlinedIcon,
   ArrowForwardIosIcon,
@@ -20,12 +20,12 @@ import {
   ManageHistoryIcon,
   SettingsIcon,
   ExitToAppIcon,
-} from "./Icon";
-import avatarDefault from "../../../../public/assests/avatar.png";
-import { useSelector } from "react-redux";
-import Link from "next/link";
-import Image from "next/image";
-import { useTheme } from "next-themes";
+} from './Icon';
+import avatarDefault from '../../../../public/assests/avatar.png';
+import { useSelector } from 'react-redux';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 interface itemProps {
   title: string;
@@ -52,7 +52,7 @@ const Sidebar = () => {
   const { user } = useSelector((state: any) => state.auth);
   const [logout, setlogout] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selected, setSelected] = useState("Dashboard");
+  const [selected, setSelected] = useState('Dashboard');
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -69,26 +69,26 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-        "& .pro-sidebar-inner": {
+        '& .pro-sidebar-inner': {
           background: `${
-            theme === "dark" ? "#111C43 !important" : "#fff !important"
+            theme === 'dark' ? '#111C43 !important' : '#fff !important'
           }`,
         },
-        "& .pro-icon-wrapper": {
-          backgroundColor: "transparent !important",
+        '& .pro-icon-wrapper': {
+          backgroundColor: 'transparent !important',
         },
-        "& .pro-inner-item:hover": {
-          color: "#868dfb !important",
+        '& .pro-inner-item:hover': {
+          color: '#868dfb !important',
         },
-        "& .pro-menu-item.active": {
-          color: "#6870fa !important",
+        '& .pro-menu-item.active': {
+          color: '#6870fa !important',
         },
-        "& .pro-inner-item": {
-          padding: "5px 35px 5px 20px !important",
+        '& .pro-inner-item': {
+          padding: '5px 35px 5px 20px !important',
           opacity: 1,
         },
-        "& .pro-menu-item": {
-          color: `${theme !== "dark" && "#000"}`,
+        '& .pro-menu-item': {
+          color: `${theme !== 'dark' && '#000'}`,
         },
       }}
       className="!bg-white dark:bg-[#111C43]"
@@ -96,12 +96,12 @@ const Sidebar = () => {
       <ProSidebar
         collapsed={isCollapsed}
         style={{
-          position: "fixed",
+          position: 'fixed',
           top: 0,
           left: 0,
-          height: "100vh",
-          zIndex:99999999999999,
-          width: isCollapsed ? "0%" : "16%",
+          height: '100vh',
+          zIndex: 99999999999999,
+          width: isCollapsed ? '0%' : '16%',
         }}
       >
         <Menu iconShape="square">
@@ -110,7 +110,7 @@ const Sidebar = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             icon={isCollapsed ? <ArrowForwardIosIcon /> : undefined}
             style={{
-              margin: "10px 0 20px 0",
+              margin: '10px 0 20px 0',
             }}
           >
             {!isCollapsed && (
@@ -120,12 +120,15 @@ const Sidebar = () => {
                 alignItems="center"
                 ml="15px"
               >
-               <Link href="/" className="block">
-               <h3 className="text-[25px] font-Poppins uppercase dark:text-white text-black">
-                  ELearning
-                </h3>
-               </Link>
-                <IconButton onClick={() => setIsCollapsed(!isCollapsed)} className="inline-block">
+                <Link href="/" className="block">
+                  <h3 className="text-[25px] font-Poppins uppercase dark:text-white text-black">
+                    Course Catalyst
+                  </h3>
+                </Link>
+                <IconButton
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="inline-block"
+                >
                   <ArrowBackIosIcon className="text-black dark:text-[#ffffffc1]" />
                 </IconButton>
               </Box>
@@ -141,9 +144,9 @@ const Sidebar = () => {
                   height={100}
                   src={user.avatar ? user.avatar.url : avatarDefault}
                   style={{
-                    cursor: "pointer",
-                    borderRadius: "50%",
-                    border: "3px solid #5b6fe6",
+                    cursor: 'pointer',
+                    borderRadius: '50%',
+                    border: '3px solid #5b6fe6',
                   }}
                 />
               </Box>
@@ -151,13 +154,13 @@ const Sidebar = () => {
                 <Typography
                   variant="h4"
                   className="!text-[20px] text-black dark:text-[#ffffffc1]"
-                  sx={{ m: "10px 0 0 0" }}
+                  sx={{ m: '10px 0 0 0' }}
                 >
                   {user?.name}
                 </Typography>
                 <Typography
                   variant="h6"
-                  sx={{ m: "10px 0 0 0" }}
+                  sx={{ m: '10px 0 0 0' }}
                   className="!text-[20px] text-black dark:text-[#ffffffc1] capitalize"
                 >
                   - {user?.role}
@@ -166,7 +169,7 @@ const Sidebar = () => {
             </Box>
           )}
 
-          <Box paddingLeft={isCollapsed ? undefined : "10%"}>
+          <Box paddingLeft={isCollapsed ? undefined : '10%'}>
             <Item
               title="Dashboard"
               to="/admin"
@@ -177,10 +180,10 @@ const Sidebar = () => {
 
             <Typography
               variant="h5"
-              sx={{ m: "15px 0 5px 25px" }}
+              sx={{ m: '15px 0 5px 25px' }}
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
             >
-              {!isCollapsed && "Data"}
+              {!isCollapsed && 'Data'}
             </Typography>
             <Item
               title="Users"
@@ -201,9 +204,9 @@ const Sidebar = () => {
             <Typography
               variant="h5"
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
-              sx={{ m: "15px 0 5px 20px" }}
+              sx={{ m: '15px 0 5px 20px' }}
             >
-              {!isCollapsed && "Content"}
+              {!isCollapsed && 'Content'}
             </Typography>
             <Item
               title="Create Course"
@@ -223,9 +226,9 @@ const Sidebar = () => {
             <Typography
               variant="h5"
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
-              sx={{ m: "15px 0 5px 20px" }}
+              sx={{ m: '15px 0 5px 20px' }}
             >
-              {!isCollapsed && "Customization"}
+              {!isCollapsed && 'Customization'}
             </Typography>
             <Item
               title="Hero"
@@ -252,9 +255,9 @@ const Sidebar = () => {
             <Typography
               variant="h5"
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
-              sx={{ m: "15px 0 5px 20px" }}
+              sx={{ m: '15px 0 5px 20px' }}
             >
-              {!isCollapsed && "Controllers"}
+              {!isCollapsed && 'Controllers'}
             </Typography>
             <Item
               title="Manage Team"
@@ -267,9 +270,9 @@ const Sidebar = () => {
             <Typography
               variant="h6"
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
-              sx={{ m: "15px 0 5px 20px" }}
+              sx={{ m: '15px 0 5px 20px' }}
             >
-              {!isCollapsed && "Analytics"}
+              {!isCollapsed && 'Analytics'}
             </Typography>
             <Item
               title="Courses Analytics"
@@ -297,9 +300,9 @@ const Sidebar = () => {
             <Typography
               variant="h6"
               className="!text-[18px] text-black dark:text-[#ffffffc1] capitalize !font-[400]"
-              sx={{ m: "15px 0 5px 20px" }}
+              sx={{ m: '15px 0 5px 20px' }}
             >
-              {!isCollapsed && "Extras"}
+              {!isCollapsed && 'Extras'}
             </Typography>
             <div onClick={logoutHandler}>
               <Item

@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import Heading from "../utils/Heading";
-import AdminSidebar from "../components/Admin/sidebar/AdminSidebar";
-import AdminProtected from "../hooks/adminProtected";
-import DashboardHero from "../components/Admin/DashboardHero";
+'use client';
+import React from 'react';
+import Heading from '../utils/Heading';
+import AdminSidebar from '../components/Admin/sidebar/AdminSidebar';
+import AdminProtected from '../hooks/adminProtected';
+import DashboardHero from '../components/Admin/DashboardHero';
 
 type Props = {};
 
@@ -12,8 +12,8 @@ const page = (props: Props) => {
     <div>
       <AdminProtected>
         <Heading
-          title="Elearning - Admin"
-          description="ELearning is a platform for students to learn and get help from teachers"
+          title="Course Catalyst - Admin"
+          description="Course Catalyst is a platform for students to learn and get help from teachers"
           keywords="Programming,MERN,Redux,Machine Learning"
         />
         <div className="flex min-h-screen">

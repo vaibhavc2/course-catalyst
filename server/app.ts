@@ -20,13 +20,8 @@ app.use(cookieParser());
 
 // cors => cross origin resource sharing
 // origin: process.env.ORIGIN,
-app.use(
-    cors({
-        origin: ['http://localhost:3000', "https://elearninglms.netlify.app"],
-        credentials: true,
-    })
-);
-// app.use(cors({ origin: process.env.ORIGIN, credentials: true, }))
+
+app.use(cors({ origin: process.env.ORIGIN, credentials: true, }))
 
 // api requests limit
 const limiter = rateLimit({

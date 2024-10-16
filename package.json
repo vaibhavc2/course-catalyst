@@ -4,20 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "format": "prettier \"{apps,libs}/**/*.{ts,tsx,js,json}\" --ignore-path .prettierignore",
-    "format:check": "pnpm format --check",
-    "format:write": "pnpm format --write",
-    "tsc": "nx run-many -t tsc",
-    "lint": "nx run-many -t lint",
-    "build": "nx run-many -t build",
-    "dev": "nx run-many -t dev",
-    "validate": "pnpm format:write && pnpm tsc && pnpm lint && pnpm build",
-    "prepare": "husky",
     "cm": "cz",
     "cm:offline": "git add . && cz",
-    "cm:all": "git add . && cz && git push",
-    "client:dev": "nx run @lms/client:dev",
-    "server:dev": "nx run @lms/server:dev"
+    "cm:all": "git add . && cz && git push"
   },
   "keywords": [],
   "author": "",
@@ -26,10 +15,7 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "commitizen": "^4.3.0",
-    "eslint": "^9.6.0",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.7",
-    "nx": "19.3.1",
+    "eslint": "^8.0.0",
     "prettier": "^3.3.2",
     "typescript": "^5.5.3"
   }
